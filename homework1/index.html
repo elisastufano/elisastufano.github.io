@@ -1,196 +1,882 @@
-<!doctype html>
-<html lang="it">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Toy Public Key</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
+  /* Layout: sticky section nav, one wide column. Worksheet feel: paper-grey ground, teal ink for results, orange only for the thing being computed right now. */
   :root {
-    --bg: #f6f7fb; --card: #ffffff; --text: #1d2433; --muted: #5d6679;
-    --accent: #4f46e5; --accent-soft: #eef0ff; --border: #dfe3ee; --ok: #0f9d58;
+    --bg: #f1f4f1; --surface: #ffffff; --surface-2: #e8eee9; --fg: #14211c; --muted: #53625b; --border: #d2dbd4;
+    --accent: #0a7a68; --accent-soft: #daf0ea; --on-accent: #ffffff;
+    --hi: #c2410c; --hi-soft: #fde6d9;
+    --grid: #e1e8e3; --pt: #a9b6ae; --ok: #15803d; --bad: #b91c1c;
+    --display: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #12141c; --card: #1b1f2b; --text: #e8ebf5; --muted: #98a1b8;
-      --accent: #8b8cff; --accent-soft: #262a40; --border: #2b3144; --ok: #4cd08a;
+    :root:not([data-theme="light"]) {
+      --bg: #0e1512; --surface: #151e1a; --surface-2: #1d2823; --fg: #e4ede8; --muted: #93a49b; --border: #27342e;
+      --accent: #4fd1b6; --accent-soft: #17322b; --on-accent: #0b1a15;
+      --hi: #ffa24d; --hi-soft: #3a2713;
+      --grid: #212d27; --pt: #4b5b53; --ok: #4cd08a; --bad: #ff7b72;
+      color-scheme: dark;
     }
   }
+  :root[data-theme="dark"] {
+    --bg: #0e1512; --surface: #151e1a; --surface-2: #1d2823; --fg: #e4ede8; --muted: #93a49b; --border: #27342e;
+    --accent: #4fd1b6; --accent-soft: #17322b; --on-accent: #0b1a15;
+    --hi: #ffa24d; --hi-soft: #3a2713;
+    --grid: #212d27; --pt: #4b5b53; --ok: #4cd08a; --bad: #ff7b72;
+    color-scheme: dark;
+  }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5;
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { background: var(--bg); color: var(--fg); font: 400 16px/1.55 var(--font); padding-inline: 16px; padding-block: 0 56px; }
+  .nav {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; margin-inline: -16px; padding: 10px 16px;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 4px 20px; align-items: baseline;
   }
-  main { max-width: 760px; margin: 0 auto; }
-  h1 { font-size: 1.6rem; margin: 0 0 4px; }
-  h2 { font-size: 1.1rem; margin: 0 0 12px; }
-  .sub { color: var(--muted); margin: 0 0 20px; }
-  .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 18px; margin-bottom: 16px;
-  }
-  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  .params { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
-  .param { background: var(--accent-soft); border-radius: 10px; padding: 10px 12px; }
-  .param span { display: block; font-size: .75rem; color: var(--muted); }
-  .param b { font-size: 1.05rem; }
-  .row { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-top: 14px; }
-  label { font-size: .85rem; color: var(--muted); display: block; margin-bottom: 4px; }
-  input {
-    width: 120px; padding: 8px 10px; font-size: 1rem; border-radius: 8px;
-    border: 1px solid var(--border); background: var(--bg); color: var(--text);
-  }
-  button {
-    padding: 9px 16px; font-size: 1rem; border: 0; border-radius: 8px; cursor: pointer;
-    background: var(--accent); color: #fff; font-weight: 600;
-  }
-  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
-  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); }
-  th { color: var(--muted); font-weight: 600; font-size: .8rem; }
-  tr.last td { background: var(--accent-soft); font-weight: 700; }
-  .result {
-    text-align: center; font-size: 1.8rem; font-weight: 700; color: var(--accent);
-    padding: 14px; background: var(--accent-soft); border-radius: 12px;
-  }
+  .brand { font: 700 1.05rem var(--display); margin-right: auto; color: var(--fg); text-decoration: none; }
+  .nav a:not(.brand) { font: 500 .82rem var(--mono); color: var(--muted); text-decoration: none; }
+  .nav a:not(.brand):hover { color: var(--accent); text-decoration: underline; }
+  main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 60px; padding-top: 32px; }
+  section { scroll-margin-top: 70px; min-width: 0; }
+  .eyebrow { font: 500 .75rem var(--mono); letter-spacing: .09em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+  h1 { font: 700 clamp(1.8rem, 5vw, 2.7rem)/1.08 var(--display); letter-spacing: -.01em; margin: 0 0 14px; text-wrap: balance; }
+  h2 { font: 700 clamp(1.4rem, 3.4vw, 1.8rem)/1.15 var(--display); margin: 0 0 10px; text-wrap: balance; }
+  h3 { font: 600 1.05rem/1.3 var(--font); margin: 0 0 8px; }
+  p { margin: 0 0 .8em; max-width: 72ch; }
+  .lead { color: var(--muted); font-size: 1.05rem; }
   .note { color: var(--muted); font-size: .9rem; }
-  .ok { color: var(--ok); font-weight: 600; }
-  .scroll { overflow-x: auto; }
+  .read { color: var(--muted); font-size: .93rem; margin: 12px 0 0; }
+  .read b { color: var(--fg); }
+  code, .mono { font-family: var(--mono); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; min-width: 0; }
+  .stack { display: flex; flex-direction: column; gap: 16px; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; }
+  .grid2 > * { min-width: 0; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 12px 14px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  label { font: 500 .72rem var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  input, select { font: 500 1rem var(--mono); padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); min-width: 0; }
+  input[type=number] { width: 7.6em; }
+  select { max-width: 100%; }
+  button { font: 600 .92rem var(--font); padding: 9px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); cursor: pointer; }
+  button.ghost { background: transparent; color: var(--accent); }
+  button:hover { filter: brightness(1.08); }
+  button:disabled { opacity: .45; cursor: default; }
+  :focus-visible { outline: 2px solid var(--hi); outline-offset: 2px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 16px; }
+  .tile { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+  .tile span { display: block; font: 500 .68rem var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  .tile b { font: 600 .98rem var(--mono); overflow-wrap: anywhere; }
+
+  .result { border: 2px solid var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 16px 18px; display: flex; flex-wrap: wrap; gap: 8px 32px; align-items: center; }
+  .result .lbl { font: 600 .75rem var(--mono); letter-spacing: .1em; color: var(--accent); }
+  .result .big { font: 700 clamp(1.4rem, 5vw, 2.2rem)/1.2 var(--mono); color: var(--fg); overflow-wrap: anywhere; }
+  .result .sub { color: var(--muted); font: 400 .85rem var(--mono); min-width: 0; overflow-wrap: anywhere; }
+
+  .tbl { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font: 400 .88rem var(--mono); font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; }
+  tr.last td { background: var(--accent-soft); font-weight: 600; }
+  tr.cur td { background: var(--hi-soft); }
+  tr.click { cursor: pointer; }
+  tr.click:hover td { background: var(--surface-2); }
+  td.dim { color: var(--muted); }
+  .dtbl { min-width: 760px; font: 400 .88rem var(--font); }
+  .dtbl td, .dtbl th { white-space: normal; }
+  .dtbl th { font-family: var(--mono); }
+  .scrollbox { max-height: 300px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+
+  .cv { min-width: 0; }
+  canvas { display: block; max-width: 100%; }
+  .cap { font: 500 .75rem var(--mono); color: var(--muted); margin-bottom: 4px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font: 400 .78rem var(--mono); color: var(--muted); margin-top: 8px; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+  .animwrap { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); gap: 18px; align-items: start; }
+  @media (max-width: 820px) { .animwrap { grid-template-columns: minmax(0, 1fr); } }
+  .animtext { background: var(--surface-2); border-radius: 8px; padding: 14px; font-size: .92rem; min-height: 12em; min-width: 0; }
+  .animtext h3 { font-family: var(--mono); }
+  .animtext p { margin: 0 0 .6em; overflow-wrap: anywhere; }
+  .phases { display: flex; gap: 6px; margin: 0 0 10px; flex-wrap: wrap; }
+  .phases span { font: 500 .72rem var(--mono); padding: 3px 8px; border-radius: 99px; border: 1px solid var(--border); color: var(--muted); }
+  .phases span.on { background: var(--hi); border-color: var(--hi); color: var(--surface); }
+  .out { font: 400 .86rem var(--mono); margin-top: 12px; overflow-wrap: anywhere; min-height: 3em; }
+  .out .ok { color: var(--ok); font-weight: 600; }
+  .out .bad { color: var(--bad); font-weight: 600; }
+  footer { color: var(--muted); font-size: .85rem; border-top: 1px solid var(--border); padding-top: 16px; }
 </style>
-</head>
-<body>
-<main>
-  <h1>Toy Public Key (curva ellittica)</h1>
-  <p class="sub">Dalla chiave privata <b>k</b> alla chiave pubblica <b>Q = kG</b> su una curva giocattolo, come in Ethereum (che usa secp256k1).</p>
 
-  <section class="card">
-    <h2>1. Curva e parametri</h2>
-    <div class="params">
-      <div class="param"><span>Curva</span><b class="mono">y² = x³ + 7 (mod 17)</b></div>
-      <div class="param"><span>Punto base G</span><b class="mono" id="gShow"></b></div>
-      <div class="param"><span>Chiave privata k</span><b class="mono" id="kShow"></b></div>
-    </div>
-    <p id="gCheck" class="note"></p>
-    <div class="row">
-      <div>
-        <label for="kInput">Cambia k (1–500)</label>
-        <input id="kInput" type="number" min="1" max="500" value="6">
+<header class="nav">
+  <a class="brand" href="#top">Toy Public Key</a>
+  <a href="#task">Task</a>
+  <a href="#guru">Guru level</a>
+  <a href="#stats">Statistical exploration</a>
+  <a href="#discussion">Discussion</a>
+</header>
+
+<main id="top">
+  <section>
+    <p class="eyebrow">Homework 1 · Public-key cryptography</p>
+    <h1>Dalla chiave privata alla chiave pubblica su una curva ellittica</h1>
+    <p class="lead">Una curva giocattolo y² = x³ + 7 (mod p), della stessa forma di secp256k1 usata da Ethereum. Si parte da un numero k, lo si moltiplica per un punto base G e si ottiene Q = kG. Il percorso inverso, da Q a k, è il problema difficile.</p>
+
+    <div class="card">
+      <div class="controls">
+        <div class="field"><label for="pSel">Campo finito</label>
+          <select id="pSel">
+            <option value="17">p = 17 (esempio del prof)</option>
+            <option value="97">p = 97</option>
+            <option value="1009">p = 1 009</option>
+            <option value="10007">p = 10 007</option>
+            <option value="65521">p = 65 521</option>
+          </select></div>
+        <div class="field"><label for="gx">x di G</label><input id="gx" type="number" min="0" step="1"></div>
+        <div class="field"><label for="gy">y di G</label><select id="gy"></select></div>
+        <div class="field"><label for="kIn">Chiave privata k</label><input id="kIn" type="number" min="1" step="1"></div>
+        <div class="actions">
+          <button id="applyBtn" type="button">Calcola</button>
+          <button id="randBtn" class="ghost" type="button">k casuale</button>
+          <button id="resetBtn" class="ghost" type="button">Esempio del prof</button>
+        </div>
       </div>
-      <button id="runBtn">Calcola</button>
+      <div class="tiles" id="tiles"></div>
+      <p class="note" id="setupMsg" style="margin:12px 0 0"></p>
     </div>
   </section>
 
-  <section class="card">
-    <h2>2. Calcolo di G, 2G, 3G, …, kG</h2>
-    <p class="note">Ogni passo è: <code>nG = (n−1)G + G</code> (somma di punti; per n = 2 è il raddoppio di G).</p>
-    <div class="scroll">
-      <table>
-        <thead><tr><th>n</th><th>nG</th><th>Operazione</th></tr></thead>
-        <tbody id="steps"></tbody>
-      </table>
+  <section id="task">
+    <p class="eyebrow">Task</p>
+    <h2>G, 2G, 3G, …, kG</h2>
+    <p class="lead">Ogni multiplo si ottiene sommando G al precedente. La somma di punti usa la retta (secante) per i due punti, oppure la tangente quando i punti coincidono.</p>
+    <div class="stack">
+      <div class="result">
+        <div><div class="lbl">TOY PUBLIC KEY</div><div class="big" id="pubBig"></div></div>
+        <div class="sub" id="pubSub"></div>
+      </div>
+      <div class="card">
+        <h3>Somma ripetuta</h3>
+        <div class="tbl"><table><thead><tr><th>n</th><th>nG</th><th>Operazione</th><th>Retta e pendenza</th></tr></thead><tbody id="multBody"></tbody></table></div>
+        <p class="read" id="multNote"></p>
+      </div>
+      <div class="card">
+        <h3>Metodo veloce: double-and-add</h3>
+        <p class="note" id="fastHead" style="margin-bottom:8px"></p>
+        <div class="tbl"><table><thead><tr><th>Bit</th><th>Operazione</th><th>Risultato</th></tr></thead><tbody id="fastBody"></tbody></table></div>
+        <p class="read" id="fastNote"></p>
+      </div>
     </div>
   </section>
 
-  <section class="card">
-    <h2>3. TOY PUBLIC KEY</h2>
-    <div class="result mono" id="pub"></div>
-    <p class="note" id="fast"></p>
+  <section id="guru">
+    <p class="eyebrow">Optional · Guru level</p>
+    <h2>L'algoritmo al rallentatore</h2>
+    <p class="lead">Ogni punto è una cella della griglia p × p. Modulo p la retta si "avvolge" sulla griglia, quindi è un insieme di punti arancioni. Il terzo punto in cui incontra la curva viene riflesso rispetto all'asse x, e quello è il risultato della somma.</p>
+    <div class="card">
+      <div class="controls" style="margin-bottom:14px">
+        <div class="field"><label for="modeSel">Metodo</label>
+          <select id="modeSel"><option value="rep">Somma ripetuta</option><option value="fast">Double-and-add</option></select></div>
+        <div class="field"><label for="spdSel">Velocità</label>
+          <select id="spdSel"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></div>
+        <div class="actions">
+          <button id="playBtn" type="button">Play</button>
+          <button id="prevBtn" class="ghost" type="button">Fase prec.</button>
+          <button id="stepBtn" class="ghost" type="button">Fase succ.</button>
+          <button id="rstBtn" class="ghost" type="button">Reset</button>
+        </div>
+      </div>
+      <div class="animwrap">
+        <div class="cv"><canvas id="cvAnim" role="img" aria-label="Animazione della somma di punti sulla curva ellittica"></canvas></div>
+        <div>
+          <div class="phases" id="phases"><span>1 punti</span><span>2 retta</span><span>3 terzo punto</span><span>4 riflessione</span></div>
+          <div class="animtext" id="animText"></div>
+        </div>
+      </div>
+      <div class="legend" id="animLegend"></div>
+      <p class="note" id="animNote" style="margin:10px 0 0"></p>
+    </div>
   </section>
 
-  <section class="card">
-    <h2>Perché è una funzione a senso unico?</h2>
-    <p class="note">Calcolare Q = kG è facile (basta sommare punti, o usare il metodo double-and-add). Il problema inverso, trovare k conoscendo solo G e Q, è l'<b>ECDLP</b> (Elliptic Curve Discrete Logarithm Problem). Qui il gruppo ha pochissimi punti e si risolve a mano; su secp256k1 ci sono circa 2²⁵⁶ punti e non è fattibile.</p>
+  <section id="stats">
+    <p class="eyebrow">Statistical exploration</p>
+    <h2>Cosa succede al variare di k e di G</h2>
+    <p class="lead" id="statsLead"></p>
+    <div class="stack">
+      <div class="card">
+        <h3>Altri punti base</h3>
+        <div id="baseBox"></div>
+        <p class="read" id="baseRead"></p>
+      </div>
+      <div class="card">
+        <h3>Dove cadono i punti kG</h3>
+        <div class="cv"><canvas id="cvPts" role="img" aria-label="Punti della curva e punti del sottogruppo generato da G"></canvas></div>
+        <div class="legend" id="lgPts"></div>
+        <p class="read" id="rdPts"></p>
+      </div>
+      <div class="card">
+        <h3>Distribuzione di x e di y</h3>
+        <div class="grid2">
+          <div class="cv"><div class="cap">coordinata x di kG</div><canvas id="cvHx" role="img" aria-label="Istogramma di x"></canvas></div>
+          <div class="cv"><div class="cap">coordinata y di kG</div><canvas id="cvHy" role="img" aria-label="Istogramma di y"></canvas></div>
+        </div>
+        <div class="legend"><span><i class="sw" style="background:var(--fg)"></i>conteggio atteso se uniforme</span></div>
+        <p class="read" id="rdHist"></p>
+      </div>
+      <div class="card">
+        <h3>Frequenza dei singoli valori</h3>
+        <div class="tbl" id="freqTbl"></div>
+        <p class="read" id="rdFreq"></p>
+      </div>
+      <div class="card">
+        <h3>Distribuzione dei bit</h3>
+        <div class="cv"><canvas id="cvBits" role="img" aria-label="Frequenza dei bit pari a 1 per x e y"></canvas></div>
+        <div class="legend" id="lgBits"></div>
+        <p class="read" id="rdBits"></p>
+      </div>
+      <div class="card">
+        <h3>Correlazione tra input e output</h3>
+        <div class="cv"><canvas id="cvCorr" role="img" aria-label="Grafico di k contro x di kG"></canvas></div>
+        <p class="read" id="rdCorr"></p>
+      </div>
+      <div class="card">
+        <h3>Effetto valanga</h3>
+        <div class="cv"><canvas id="cvAva" role="img" aria-label="Frazione di bit di output che cambiano quando si inverte un bit di k"></canvas></div>
+        <div class="legend" id="lgAva"></div>
+        <p class="read" id="rdAva"></p>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h3>Una struttura che un hash non ha</h3>
+          <p class="note">Somma due chiavi e somma i punti corrispondenti.</p>
+          <div class="controls">
+            <div class="field"><label for="hA">a</label><input id="hA" type="number" min="1" value="2"></div>
+            <div class="field"><label for="hB">b</label><input id="hB" type="number" min="1" value="5"></div>
+            <button id="hBtn" type="button">Verifica</button>
+          </div>
+          <div class="out" id="homOut"></div>
+        </div>
+        <div class="card">
+          <h3>Rompere il problema inverso</h3>
+          <p class="note">Dato solo Q e G, cerca k con due attacchi.</p>
+          <button id="dBtn" type="button">Recupera k da Q</button>
+          <div class="out" id="dlpOut"></div>
+        </div>
+      </div>
+    </div>
   </section>
+
+  <section id="discussion">
+    <p class="eyebrow">Discussion</p>
+    <h2>Quali proprietà contano per una funzione one-way, e quali sono da hash</h2>
+    <p class="lead">Le statistiche di sopra descrivono l'aspetto dell'output. La sicurezza di Q = kG dipende invece dalla difficoltà del logaritmo discreto sulla curva (ECDLP).</p>
+    <div class="card">
+      <div class="tbl"><table class="dtbl"><thead><tr><th>Proprietà</th><th>Nei dati di questa pagina</th><th>Funzione one-way kG</th><th>Hash crittografico</th></tr></thead><tbody id="discBody"></tbody></table></div>
+    </div>
+    <div class="stack" style="margin-top:16px">
+      <div class="card">
+        <h3>In sintesi</h3>
+        <p>Uniformità, bit bilanciati ed effetto valanga sono obiettivi di progetto degli hash: ci si aspetta che l'output sembri casuale e che non ci siano relazioni sfruttabili tra input e output. Per kG nessuna di queste proprietà è ciò che protegge la chiave. Conta che l'ECDLP sia difficile, che il gruppo sia grande (su secp256k1 l'ordine è circa 2²⁵⁶) e che i parametri siano scelti con cura.</p>
+        <p>I test statistici sono prove necessarie ma non sufficienti. Passarli non dimostra nulla sulla difficoltà dell'inversione. Fallirne alcuni non rompe la funzione: la struttura algebrica, che a un hash è vietata, è ciò che rende possibili firme digitali e scambio di chiavi.</p>
+        <p>Ethereum usa entrambe le cose. La chiave privata k genera la chiave pubblica Q = kG su secp256k1. L'indirizzo è poi calcolato con un hash, Keccak-256, applicato alla chiave pubblica: l'indirizzo sono gli ultimi 20 byte del risultato.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>Tutti i calcoli girano nel browser. Nessun dato lascia questa pagina. La curva e le dimensioni usate qui sono giocattolo e non offrono alcuna sicurezza reale.</footer>
 </main>
 
 <script>
-// ===== CORE: curva ellittica giocattolo =====
-const P = 17;            // modulo (campo finito)
-const A = 0, B = 7;      // y^2 = x^3 + 7
-const G = { x: 1, y: 5 };
-const INF = null;        // punto all'infinito (elemento neutro)
+/*PURE-START*/
+// ===== Matematica del campo finito e della curva y^2 = x^3 + 7 (mod P) =====
+const INF = null;               // punto all'infinito (elemento neutro)
+const CB = 7;                   // y^2 = x^3 + CB
+let P = 17;                     // modulo corrente
+let SQ = null;                  // SQ[v] = radice quadrata minima di v mod P, oppure -1
+const mod = (n) => ((n % P) + P) % P;
 
-const mod = (n, m = P) => ((n % m) + m) % m;
-
-// inverso modulare con algoritmo di Euclide esteso
-function inv(a, m = P) {
-  let [r0, r1] = [mod(a, m), m];
-  let [s0, s1] = [1, 0];
+function inv(a) {               // inverso modulare (Euclide esteso)
+  let r0 = mod(a), r1 = P, s0 = 1, s1 = 0;
   while (r1 !== 0) {
     const q = Math.floor(r0 / r1);
     [r0, r1] = [r1, r0 - q * r1];
     [s0, s1] = [s1, s0 - q * s1];
   }
-  return mod(s0, m);
+  return mod(s0);
 }
+const same = (p, q) => p === q || (p !== INF && q !== INF && p.x === q.x && p.y === q.y);
+const neg = (p) => (p === INF ? INF : { x: p.x, y: mod(-p.y) });
+const onCurve = (p) => p === INF || mod(p.y * p.y) === mod(p.x * p.x * p.x + CB);
 
-const onCurve = (p) => p === INF || mod(p.y * p.y) === mod(p.x ** 3 + A * p.x + B);
-const same = (p, q) => p === q || (p && q && p.x === q.x && p.y === q.y);
-
-// somma di punti (include il raddoppio)
-function add(p, q) {
-  if (p === INF) return q;
-  if (q === INF) return p;
-  if (p.x === q.x && mod(p.y + q.y) === 0) return INF;   // P + (-P)
-  let s;
-  if (p.x === q.x && p.y === q.y) {
-    s = mod((3 * p.x * p.x + A) * inv(2 * p.y));          // tangente
-  } else {
-    s = mod((q.y - p.y) * inv(q.x - p.x));                // secante
-  }
+// somma di punti con informazioni sul passaggio (pendenza della retta)
+function addInfo(p, q) {
+  if (p === INF) return { r: q, kind: 'neutral' };
+  if (q === INF) return { r: p, kind: 'neutral' };
+  if (p.x === q.x && mod(p.y + q.y) === 0) return { r: INF, kind: 'inverse' };
+  let s, kind;
+  if (p.x === q.x) { s = mod(mod(3 * p.x * p.x) * inv(2 * p.y)); kind = 'dbl'; }        // tangente
+  else { s = mod((q.y - p.y) * inv(q.x - p.x)); kind = 'add'; }                            // secante
   const x = mod(s * s - p.x - q.x);
   const y = mod(s * (p.x - x) - p.y);
-  return { x, y };
+  return { r: { x, y }, kind, s };
 }
+const add = (p, q) => addInfo(p, q).r;
 
-// metodo veloce: double-and-add
-function mulFast(k, p) {
-  let result = INF, addend = p;
-  while (k > 0) {
-    if (k & 1) result = add(result, addend);
-    addend = add(addend, addend);
-    k >>= 1;
+function mulFast(k, p) {        // double-and-add (da destra a sinistra)
+  let r = INF, a = p;
+  while (k > 0) { if (k & 1) r = add(r, a); a = add(a, a); k = Math.floor(k / 2); }
+  return r;
+}
+// double-and-add (da sinistra a destra) con tutti i passaggi
+function dblAddOps(k, G) {
+  const bits = k.toString(2), ops = [];
+  let R = G, m = 1;
+  for (let i = 1; i < bits.length; i++) {
+    const d = addInfo(R, R);
+    ops.push({ kind: 'dbl', A: R, B: R, R: d.r, s: d.s, from: m, to: 2 * m, bit: bits[i] });
+    R = d.r; m *= 2;
+    if (bits[i] === '1') {
+      const a = addInfo(R, G);
+      ops.push({ kind: 'add', A: R, B: G, R: a.r, s: a.s, from: m, to: m + 1, bit: bits[i] });
+      R = a.r; m += 1;
+    }
   }
-  return result;
+  return { bits, ops, result: R };
 }
-const fmt = (p) => (p === INF ? "∞ (punto all'infinito)" : `(${p.x}, ${p.y})`);
-// ===== END CORE =====
+function repeatedOps(k, G) {
+  const ops = []; let R = G;
+  for (let m = 1; m < k; m++) {
+    const a = addInfo(R, G);
+    ops.push({ kind: a.kind, A: R, B: G, R: a.r, s: a.s, from: m, to: m + 1 });
+    R = a.r;
+  }
+  return { ops, result: R };
+}
 
-function run() {
-  let k = parseInt(document.getElementById("kInput").value, 10);
-  if (!Number.isInteger(k) || k < 1) k = 1;
-  if (k > 500) k = 500;
-  document.getElementById("kInput").value = k;
-
-  document.getElementById("gShow").textContent = fmt(G);
-  document.getElementById("kShow").textContent = k;
-  document.getElementById("gCheck").innerHTML = onCurve(G)
-    ? `<span class="ok">✓ G è sulla curva:</span> ${G.y}² = ${mod(G.y * G.y)} e ${G.x}³ + 7 = ${mod(G.x ** 3 + B)} (mod ${P}).`
-    : "G non è sulla curva!";
-
-  const tbody = document.getElementById("steps");
-  tbody.innerHTML = "";
+function setField(p) {
+  P = p; SQ = new Int32Array(P).fill(-1);
+  for (let y = 0; y < P; y++) { const s = (y * y) % P; if (SQ[s] === -1) SQ[s] = y; }
+}
+const rhs = (x) => mod(x * x * x + CB);
+function rootsAt(x) { const r = SQ[rhs(x)]; if (r === -1) return []; if (r === 0) return [0]; return [r, P - r]; }
+function curvePoints() {
+  const xs = [], ys = [];
+  for (let x = 0; x < P; x++) for (const y of rootsAt(x)) { xs.push(x); ys.push(y); }
+  return { xs: Int32Array.from(xs), ys: Int32Array.from(ys) };
+}
+function factor(n) { const f = []; let m = n; for (let q = 2; q * q <= m; q++) while (m % q === 0) { f.push(q); m /= q; } if (m > 1) f.push(m); return f; }
+function pointOrder(G, N) {
+  let ord = N;
+  for (const q of new Set(factor(N))) while (ord % q === 0 && mulFast(ord / q, G) === INF) ord /= q;
+  return ord;
+}
+function nextValidX(x0) { for (let i = 0; i < P; i++) { const x = (x0 + i) % P; if (rootsAt(x).length === 2) return x; } return -1; }
+function bestGenerator(N) {
+  let best = null, tried = 0;
+  for (let x = 1; x < P && tried < 40; x++) {
+    const r = rootsAt(x); if (r.length !== 2) continue;
+    tried++;
+    const G = { x, y: r[0] }, ord = pointOrder(G, N);
+    if (!best || ord > best.ord) best = { G, ord };
+    if (ord === N) break;
+  }
+  return best;
+}
+function buildTable(G, n) {     // xs[k], ys[k] = coordinate di kG per k = 1..n-1
+  const xs = new Int32Array(n).fill(-1), ys = new Int32Array(n).fill(-1);
   let cur = INF;
-  for (let n = 1; n <= k; n++) {
-    const prev = cur;
-    cur = add(cur, G);
-    const op = n === 1 ? "G" : n === 2 ? "G + G (raddoppio)" : `${n - 1}G + G`;
-    const tr = document.createElement("tr");
-    if (n === k) tr.className = "last";
-    tr.innerHTML = `<td>${n}</td><td class="mono">${fmt(cur)}</td><td>${op}</td>`;
-    tbody.appendChild(tr);
-  }
-
-  const Q = cur;
-  const fast = mulFast(k, G);
-  document.getElementById("pub").textContent = `Q = ${k}G = ${fmt(Q)}`;
-  document.getElementById("fast").textContent =
-    `Controllo con il metodo veloce (double-and-add): ${fmt(fast)} — ` +
-    (same(Q, fast) ? "stesso risultato ✓" : "risultato diverso ✗");
-  console.log("TOY PUBLIC KEY:", Q);
+  for (let k = 1; k < n; k++) { cur = add(cur, G); xs[k] = cur.x; ys[k] = cur.y; }
+  return { xs, ys };
 }
 
-document.getElementById("runBtn").addEventListener("click", run);
-document.getElementById("kInput").addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
-run();
+// ===== Statistica =====
+const bitlen = (v) => (v <= 1 ? 1 : Math.floor(Math.log2(v)) + 1);
+function popcnt(v) { v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); return Math.imul((v + (v >>> 4)) & 0x0F0F0F0F, 0x01010101) >>> 24; }
+function fmix32(h) { h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16; return h >>> 0; }
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+function histogram(arr, n, bins) {          // arr[1..n-1]
+  const counts = new Array(bins).fill(0), widths = new Array(bins).fill(0);
+  const bi = (v) => Math.min(bins - 1, Math.floor(v * bins / P));
+  for (let v = 0; v < P; v++) widths[bi(v)]++;
+  for (let k = 1; k < n; k++) counts[bi(arr[k])]++;
+  const m = n - 1; let chi = 0;
+  for (let b = 0; b < bins; b++) { const e = m * widths[b] / P; chi += (counts[b] - e) * (counts[b] - e) / e; }
+  return { counts, expected: widths.map((w) => m * w / P), chi, df: bins - 1 };
+}
+function multiplicity(arr, n) {             // quante volte compare ogni valore in [0,P)
+  const cnt = new Int32Array(P);
+  for (let k = 1; k < n; k++) cnt[arr[k]]++;
+  const t = [0, 0, 0, 0];
+  for (let v = 0; v < P; v++) t[Math.min(3, cnt[v])]++;
+  return t;
+}
+function bitFreq(arr, n, nb) {
+  const ones = new Array(nb).fill(0);
+  for (let k = 1; k < n; k++) { const v = arr[k]; for (let j = 0; j < nb; j++) ones[j] += (v >> j) & 1; }
+  return ones.map((o) => o / (n - 1));
+}
+function pearson(a, b) {
+  const n = a.length; let sa = 0, sb = 0;
+  for (let i = 0; i < n; i++) { sa += a[i]; sb += b[i]; }
+  const ma = sa / n, mb = sb / n; let num = 0, da = 0, db = 0;
+  for (let i = 0; i < n; i++) { const x = a[i] - ma, y = b[i] - mb; num += x * y; da += x * x; db += y * y; }
+  return da > 0 && db > 0 ? num / Math.sqrt(da * db) : 0;
+}
+function avalanche(xs, ys, n, samples) {
+  const kb = bitlen(n - 1), ob = bitlen(P - 1);
+  const ec = new Array(kb).fill(0), id = new Array(kb).fill(0), mx = new Array(kb).fill(0), cnt = new Array(kb).fill(0);
+  const rnd = mulberry32(12345);
+  for (let i = 0; i < kb; i++) {
+    for (let s = 0; s < samples; s++) {
+      const k = 1 + Math.floor(rnd() * (n - 1));
+      const k2 = (k ^ (1 << i)) % n;
+      if (k2 === 0 || k2 === k) continue;
+      ec[i] += (popcnt((xs[k] ^ xs[k2]) >>> 0) + popcnt((ys[k] ^ ys[k2]) >>> 0)) / (2 * ob);
+      id[i] += popcnt((k ^ k2) >>> 0) / kb;
+      mx[i] += popcnt((fmix32(k) ^ fmix32(k2)) >>> 0) / 32;
+      cnt[i]++;
+    }
+    if (cnt[i]) { ec[i] /= cnt[i]; id[i] /= cnt[i]; mx[i] /= cnt[i]; }
+  }
+  const avg = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+  return { ec, id, mx, kb, ob, mEc: avg(ec), mId: avg(id), mMx: avg(mx) };
+}
+const ptKey = (p) => (p === INF ? -1 : p.x * P + p.y);
+function bruteForce(Q, G) {
+  let cur = G, steps = 1, k = 1;
+  while (!same(cur, Q)) { cur = add(cur, G); steps++; k++; }
+  return { k, steps };
+}
+function bsgs(Q, G, n) {
+  const m = Math.ceil(Math.sqrt(n)), baby = new Map();
+  let cur = INF;
+  for (let j = 0; j < m; j++) { baby.set(ptKey(cur), j); cur = add(cur, G); }
+  const step = neg(cur);                    // -mG
+  let gamma = Q;
+  for (let i = 0; i <= m; i++) {
+    const j = baby.get(ptKey(gamma));
+    if (j !== undefined) return { k: (i * m + j) % n, steps: m + i + 1, m };
+    gamma = add(gamma, step);
+  }
+  return null;
+}
+/*PURE-END*/
+
+// ===== Interfaccia =====
+const $ = (id) => document.getElementById(id);
+const S = {};
+const fmtP = (p) => (p === INF ? '∞' : '(' + p.x + ', ' + p.y + ')');
+const pt = (k) => { const i = k % S.n; return i === 0 ? INF : { x: S.xs[i], y: S.ys[i] }; };
+const f1 = (v, d) => v.toFixed(d == null ? 2 : d).replace('.', ',');
+const pct = (v) => (v * 100).toFixed(1).replace('.', ',') + '%';
+const sci = (n) => n.toLocaleString('it-IT');
+let themeStamp = 0;
+
+function colors() {
+  const cs = getComputedStyle(document.documentElement), g = (n) => cs.getPropertyValue(n).trim();
+  return { fg: g('--fg'), muted: g('--muted'), grid: g('--grid'), surface: g('--surface'), accent: g('--accent'), hi: g('--hi'), pt: g('--pt'), mono: g('--mono') || 'monospace' };
+}
+function setup(canvas, aspect) {
+  const w = Math.max(220, Math.floor(canvas.parentElement.clientWidth));
+  const h = Math.round(w * aspect), dpr = window.devicePixelRatio || 1;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+function legend(id, items) {
+  $(id).innerHTML = items.map((i) => '<span><i class="sw" style="background:var(--' + i.c + ')"></i>' + i.name + '</span>').join('');
+}
+
+function barChart(canvas, o) {
+  const { ctx, w, h } = setup(canvas, o.aspect || 0.5), cs = colors();
+  const L = 46, R = 8, T = 10, Bt = 26, pw = w - L - R, ph = h - T - Bt, n = o.labels.length, ymax = o.ymax;
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = '11px ' + cs.mono; ctx.textBaseline = 'middle';
+  for (let i = 0; i <= 4; i++) {
+    const v = ymax * i / 4, y = T + ph - ph * i / 4;
+    ctx.strokeStyle = cs.grid; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(L, Math.round(y) + .5); ctx.lineTo(L + pw, Math.round(y) + .5); ctx.stroke();
+    ctx.fillStyle = cs.muted; ctx.textAlign = 'right'; ctx.fillText(o.fmt ? o.fmt(v) : String(+v.toFixed(1)), L - 6, y);
+  }
+  const gw = pw / n, bw = Math.max(1, gw * 0.8 / o.series.length);
+  o.series.forEach((s, si) => {
+    ctx.fillStyle = cs[s.c];
+    s.values.forEach((v, i) => {
+      const bh = ph * Math.min(v, ymax) / ymax;
+      ctx.fillRect(L + i * gw + gw * 0.1 + si * bw, T + ph - bh, Math.max(1, bw - (bw > 4 ? 1 : 0)), bh);
+    });
+  });
+  if (o.ref != null) {
+    const y = T + ph - ph * o.ref / ymax;
+    if (Array.isArray(o.ref)) {
+      ctx.strokeStyle = cs.fg; ctx.lineWidth = 1.5; ctx.beginPath();
+      o.ref.forEach((v, i) => { const yy = T + ph - ph * Math.min(v, ymax) / ymax; ctx.moveTo(L + i * gw + gw * 0.05, yy); ctx.lineTo(L + (i + 1) * gw - gw * 0.05, yy); });
+      ctx.stroke();
+    } else {
+      ctx.setLineDash([5, 4]); ctx.strokeStyle = cs.fg; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(L + pw, y); ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
+  ctx.fillStyle = cs.muted; ctx.textAlign = 'center';
+  const every = Math.ceil(n / Math.max(1, Math.floor(pw / 38)));
+  o.labels.forEach((lb, i) => { if (i % every === 0) ctx.fillText(lb, L + i * gw + gw / 2, T + ph + 14); });
+}
+
+function scatter(canvas, o) {
+  const { ctx, w, h } = setup(canvas, o.aspect || 0.7), cs = colors();
+  const L = 46, R = 10, T = 10, Bt = 28, pw = w - L - R, ph = h - T - Bt;
+  const X = (v) => L + pw * v / o.xmax, Y = (v) => T + ph - ph * v / o.ymax;
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = '11px ' + cs.mono; ctx.textBaseline = 'middle';
+  for (let i = 0; i <= 4; i++) {
+    const gx = L + pw * i / 4, gy = T + ph * i / 4;
+    ctx.strokeStyle = cs.grid; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(Math.round(gx) + .5, T); ctx.lineTo(Math.round(gx) + .5, T + ph); ctx.moveTo(L, Math.round(gy) + .5); ctx.lineTo(L + pw, Math.round(gy) + .5); ctx.stroke();
+    ctx.fillStyle = cs.muted; ctx.textAlign = 'center'; ctx.fillText(String(Math.round(o.xmax * i / 4)), gx, T + ph + 12);
+    ctx.textAlign = 'right'; ctx.fillText(String(Math.round(o.ymax * (4 - i) / 4)), L - 6, gy);
+  }
+  ctx.textAlign = 'center'; ctx.fillText(o.xlabel, L + pw / 2, h - 2 > T + ph + 24 ? T + ph + 24 : h - 6);
+  for (const ly of o.layers) {
+    ctx.fillStyle = cs[ly.c]; ctx.globalAlpha = ly.alpha == null ? 1 : ly.alpha;
+    const sz = ly.size || 2, step = ly.step || 1;
+    for (let i = 0; i < ly.xs.length; i += step) ctx.fillRect(X(ly.xs[i]) - sz / 2, Y(ly.ys[i]) - sz / 2, sz, sz);
+    ctx.globalAlpha = 1;
+  }
+  for (const m of (o.marks || [])) {
+    ctx.strokeStyle = cs[m.c]; ctx.fillStyle = cs.surface; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(X(m.x), Y(m.y), 5, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = cs.fg; ctx.textAlign = 'left'; ctx.fillText(m.label, X(m.x) + 9, Y(m.y) - 8);
+  }
+}
+
+// ----- configurazione -----
+function configure(o) {
+  const msgs = [];
+  setField(o.p);
+  S.p = o.p;
+  const cp = curvePoints(); S.cx = cp.xs; S.cy = cp.ys; S.N = cp.xs.length + 1;
+  let G;
+  if (o.gx == null || Number.isNaN(o.gx)) G = bestGenerator(S.N).G;
+  else {
+    const gx = ((Math.round(o.gx) % P) + P) % P, x = nextValidX(gx), r = rootsAt(x);
+    if (x !== gx) msgs.push('Per x = ' + gx + ' non esiste un punto con ordine utile, uso x = ' + x + '.');
+    G = { x, y: (o.gy != null && r.includes(o.gy)) ? o.gy : r[0] };
+  }
+  S.G = G; S.n = pointOrder(G, S.N);
+  const T = buildTable(G, S.n); S.xs = T.xs; S.ys = T.ys;
+  let k = Math.round(o.k); if (!Number.isFinite(k) || k < 1) k = 1;
+  if (k > S.n - 1) { if (!o.quiet) msgs.push('k deve stare tra 1 e n − 1 = ' + (S.n - 1) + ' (k e k + n danno lo stesso Q). Uso k = ' + (S.n - 1) + '.'); k = S.n - 1; }
+  S.k = k;
+  S.msg = msgs.join(' ');
+  renderAll();
+}
+function renderAll() {
+  const r = rootsAt(S.G.x);
+  $('pSel').value = String(S.p); $('gx').value = S.G.x; $('kIn').value = S.k; $('kIn').max = S.n - 1;
+  $('gy').innerHTML = r.map((y) => '<option value="' + y + '"' + (y === S.G.y ? ' selected' : '') + '>' + y + '</option>').join('');
+  $('tiles').innerHTML = [
+    ['Curva', 'y² = x³ + 7 (mod ' + P + ')'], ['Punto base G', fmtP(S.G)], ['Punti sulla curva', S.N + ' (con ∞)'],
+    ['Ordine di G', S.n + ' (indice ' + (S.N / S.n) + ')'], ['k ammesso', '1 … ' + (S.n - 1)],
+  ].map((t) => '<div class="tile"><span>' + t[0] + '</span><b>' + t[1] + '</b></div>').join('');
+  $('setupMsg').textContent = S.msg || (S.n === S.N ? 'G genera tutti i punti della curva.' : 'G genera un sottogruppo di ' + S.n + ' punti, su ' + S.N + ' totali.');
+  renderTask(); computeStats(); renderStats(); renderDiscussion(); setupAnim();
+}
+
+// ----- Task -----
+function renderTask() {
+  const k = S.k, G = S.G, Q = pt(k);
+  $('pubBig').textContent = 'Q = ' + k + 'G = ' + fmtP(Q);
+  $('pubSub').textContent = 'k = ' + k + '  ·  G = ' + fmtP(G) + '  ·  y² = x³ + 7 (mod ' + P + ')';
+  const show = k <= 40 ? Array.from({ length: k }, (_, i) => i + 1) : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, null, k - 2, k - 1, k];
+  $('multBody').innerHTML = show.map((n) => {
+    if (n === null) return '<tr><td colspan="4" class="dim">… ' + (k - 15) + ' righe omesse …</td></tr>';
+    const cur = pt(n), last = n === k ? ' class="last"' : '';
+    if (n === 1) return '<tr' + last + '><td>1</td><td>1G = ' + fmtP(cur) + '</td><td class="dim">punto base</td><td class="dim">-</td></tr>';
+    const info = addInfo(pt(n - 1), G);
+    return '<tr' + last + '><td>' + n + '</td><td>' + n + 'G = ' + fmtP(cur) + '</td><td>' + (n - 1) + 'G + G</td><td class="dim">' + (info.kind === 'dbl' ? 'tangente' : 'secante') + ', λ = ' + info.s + '</td></tr>';
+  }).join('');
+  $('multNote').innerHTML = '<b>Lettura.</b> Servono ' + (k - 1) + ' somme. Il risultato dell\'ultima riga è la chiave pubblica.' + (k > 40 ? ' Per k grande la somma ripetuta non è praticabile, ed è qui che serve il metodo veloce.' : '');
+  const f = dblAddOps(k, G), nd = f.ops.filter((o) => o.kind === 'dbl').length, na = f.ops.length - nd;
+  $('fastHead').innerHTML = 'k = ' + k + ' = ' + f.bits + '<sub>2</sub>. Si parte da R = G col primo bit. Per ogni bit successivo si raddoppia R, e se il bit vale 1 si somma anche G.';
+  $('fastBody').innerHTML = '<tr><td>' + f.bits[0] + '</td><td>parto da R = G</td><td>1G = ' + fmtP(G) + '</td></tr>' + f.ops.map((o, i) =>
+    '<tr' + (i === f.ops.length - 1 ? ' class="last"' : '') + '><td>' + o.bit + '</td><td>' + (o.kind === 'dbl' ? 'raddoppio R + R' : 'somma R + G') + '</td><td>' + o.to + 'G = ' + fmtP(o.R) + '</td></tr>').join('');
+  const ok = same(f.result, Q);
+  $('fastNote').innerHTML = '<b>Lettura.</b> ' + f.ops.length + ' operazioni (' + nd + ' raddoppi, ' + na + ' somme) invece di ' + (k - 1) + ' somme. Il risultato ' + (ok ? 'coincide con quello della somma ripetuta.' : 'NON coincide con la somma ripetuta.') + ' Con un k a 256 bit bastano al massimo circa 510 operazioni, contro 2²⁵⁶ somme.';
+}
+
+// ----- Statistica -----
+function computeStats() {
+  const { xs, ys, n } = S, m = n - 1, st = {};
+  S.st = st; st.m = m;
+  if (m < 3) { st.tiny = true; return; }
+  const bins = P <= 32 ? P : 16, nb = bitlen(P - 1);
+  st.bins = bins; st.nb = nb;
+  st.hx = histogram(xs, n, bins); st.hy = histogram(ys, n, bins);
+  st.fx = multiplicity(xs, n); st.fy = multiplicity(ys, n);
+  st.bx = bitFreq(xs, n, nb); st.by = bitFreq(ys, n, nb);
+  const ks = new Float64Array(m); for (let i = 0; i < m; i++) ks[i] = i + 1;
+  st.rkx = pearson(ks, xs.subarray(1)); st.rky = pearson(ks, ys.subarray(1));
+  st.rx1 = m > 3 ? pearson(xs.subarray(1, n - 1), xs.subarray(2, n)) : 0;
+  st.ry1 = m > 3 ? pearson(ys.subarray(1, n - 1), ys.subarray(2, n)) : 0;
+  st.ava = avalanche(xs, ys, n, 1500);
+  st.covX = (st.fx[1] + st.fx[2] + st.fx[3]) / P; st.covY = (st.fy[1] + st.fy[2] + st.fy[3]) / P;
+}
+function renderBase() {
+  if (P > 101) {
+    $('baseBox').innerHTML = '<p class="note">Con p grande il G viene scelto in automatico tra i primi 40 punti validi, privilegiando l\'ordine più alto. Cambia x e y dei controlli in alto per provarne altri. La tabella completa di tutti i punti base è disponibile con p = 17 o p = 97.</p>';
+    $('baseRead').innerHTML = '';
+    return;
+  }
+  const rows = [];
+  for (let i = 0; i < S.cx.length; i++) {
+    const G = { x: S.cx[i], y: S.cy[i] }, ord = pointOrder(G, S.N), Q = mulFast(S.k, G);
+    rows.push({ G, ord, Q });
+  }
+  const cur = (r) => r.G.x === S.G.x && r.G.y === S.G.y;
+  $('baseBox').innerHTML = '<p class="note">Clicca una riga per usarla come punto base. La colonna kG usa il k corrente (' + S.k + ').</p><div class="scrollbox"><table><thead><tr><th>G</th><th>Ordine</th><th>' + S.k + 'G</th><th>Genera</th></tr></thead><tbody>' +
+    rows.map((r, i) => '<tr class="click' + (cur(r) ? ' cur' : '') + '" data-i="' + i + '"><td>' + fmtP(r.G) + '</td><td>' + r.ord + '</td><td>' + fmtP(r.Q) + '</td><td class="dim">' + (r.ord === S.N ? 'tutta la curva' : r.ord + ' punti') + '</td></tr>').join('') + '</tbody></table></div>';
+  $('baseBox').querySelectorAll('tr.click').forEach((tr) => tr.addEventListener('click', () => {
+    const r = rows[+tr.dataset.i]; configure({ p: S.p, gx: r.G.x, gy: r.G.y, k: S.k });
+  }));
+  const orders = {}; rows.forEach((r) => { orders[r.ord] = (orders[r.ord] || 0) + 1; });
+  const sumr = Object.keys(orders).sort((a, b) => a - b).map((o) => orders[o] + ' di ordine ' + o).join(', ');
+  const infs = rows.filter((r) => r.Q === INF).length;
+  $('baseRead').innerHTML = '<b>Lettura.</b> Punti base validi: ' + rows.length + ' (' + sumr + '). Con lo stesso k = ' + S.k + ', punti base diversi danno chiavi pubbliche diverse' + (infs ? ', e per ' + infs + ' di essi kG = ∞ perché l\'ordine divide k' : '') + '. Un G di ordine piccolo genera pochissime chiavi pubbliche possibili, quindi un G reale deve avere ordine primo e molto grande.';
+}
+function renderStats() {
+  const st = S.st, m = st.m, cs = colors();
+  $('statsLead').textContent = 'k percorre tutti i valori da 1 a n − 1 = ' + m + ', senza campionamento. Le statistiche descrivono quindi l\'intera immagine della funzione k → kG per la curva e il punto base scelti.' + (m < 200 ? ' Con p piccolo i campioni sono pochi: scegli p = 10 007 o p = 65 521 per risultati più significativi.' : '');
+  renderBase();
+  if (st.tiny) { ['rdPts', 'rdHist', 'rdFreq', 'rdBits', 'rdCorr', 'rdAva'].forEach((id) => { $(id).textContent = 'Sottogruppo troppo piccolo per le statistiche. Scegli un altro punto base.'; }); return; }
+  // punti
+  const Q = pt(S.k);
+  const subX = S.xs.subarray(1), subY = S.ys.subarray(1);
+  scatter($('cvPts'), { aspect: 0.62, xmax: P, ymax: P, xlabel: 'x', layers: [
+    { xs: S.cx, ys: S.cy, c: 'pt', size: P > 2000 ? 1.5 : P > 101 ? 3 : 8, alpha: .75 },
+    { xs: subX, ys: subY, c: 'accent', size: P > 2000 ? 1.5 : P > 101 ? 4 : 5, alpha: P > 2000 ? .5 : 1, step: Math.max(1, Math.floor(m / 40000)) }],
+    marks: [{ x: S.G.x, y: S.G.y, c: 'hi', label: 'G' }, { x: Q.x, y: Q.y, c: 'hi', label: 'Q' }] });
+  legend('lgPts', [{ c: 'pt', name: 'punti della curva (' + (S.N - 1) + ' più ∞)' }, { c: 'accent', name: 'punti kG, k = 1…' + m }]);
+  $('rdPts').innerHTML = '<b>Lettura.</b> I punti non sono ordinati lungo la curva: la nuvola è simmetrica rispetto a y = p/2 perché kG e (n−k)G sono opposti, e per il resto sembra casuale. ' + (S.n < S.N ? 'G copre solo ' + pct(m / (S.N - 1)) + ' dei punti, gli altri appartengono ad altri sottogruppi. ' : 'G raggiunge tutti i punti. ') + 'Con G generatore, ogni punto del sottogruppo compare esattamente una volta: kG è una biiezione, quindi l\'uniformità su k = 1…n − 1 è perfetta per costruzione e dice poco.';
+  // istogrammi
+  const lab = (b) => String(Math.ceil(b * P / st.bins));
+  const labels = Array.from({ length: st.bins }, (_, b) => lab(b));
+  const ymax = (h) => Math.max(4, Math.ceil(Math.max(...h.counts, ...h.expected) * 1.15 / 4) * 4);
+  barChart($('cvHx'), { labels, series: [{ values: st.hx.counts, c: 'accent' }], ref: st.hx.expected, ymax: ymax(st.hx), aspect: 0.62, fmt: (v) => String(Math.round(v)) });
+  barChart($('cvHy'), { labels, series: [{ values: st.hy.counts, c: 'hi' }], ref: st.hy.expected, ymax: ymax(st.hy), aspect: 0.62, fmt: (v) => String(Math.round(v)) });
+  const rx = st.hx.chi / st.hx.df, ry = st.hy.chi / st.hy.df;
+  $('rdHist').innerHTML = '<b>Lettura.</b> ' + st.bins + ' intervalli, ' + m + ' punti. χ²/gradi di libertà: x = ' + f1(rx) + ', y = ' + f1(ry) + '. Per dati uniformi e indipendenti ci si aspetta un valore vicino a 1. I punti arrivano in coppie (x, y) e (x, −y), quindi per x il test è solo indicativo.' +
+    (m < 200 ? ' Con così pochi punti il test dice poco.' : (rx <= 2.5 && ry <= 2.5 ? ' Se si guarda a questa risoluzione, le due coordinate sono compatibili con una distribuzione uniforme.' : ' Una delle due coordinate si discosta dall\'uniforme: con pochi punti per intervallo (' + f1(m / st.bins, 1) + ' in media) il rumore è alto.')) +
+    (Math.min(rx, ry) < 0.3 ? ' Un valore ben sotto 1 indica una distribuzione più regolare di quella casuale. Succede quando la struttura impone conteggi uniformi, ad esempio quando ogni y compare una sola volta.' : '') +
+    ' L\'uniformità è però solo a grana grossa, come mostra il blocco successivo.';
+  // frequenze
+  const row = (nm, t, cov) => '<tr><td>' + nm + '</td><td>' + t[0] + '</td><td>' + t[1] + '</td><td>' + t[2] + '</td><td>' + t[3] + '</td><td>' + pct(cov) + '</td></tr>';
+  $('freqTbl').innerHTML = '<table><thead><tr><th>Coordinata</th><th>Valori mai usciti</th><th>Usciti 1 volta</th><th>Usciti 2 volte</th><th>Usciti 3+ volte</th><th>Valori coperti</th></tr></thead><tbody>' + row('x (su ' + P + ' valori)', st.fx, st.covX) + row('y (su ' + P + ' valori)', st.fy, st.covY) + '</tbody></table>';
+  $('rdFreq').innerHTML = '<b>Lettura.</b> Una x compare 0 o 2 volte (1 solo se y = 0), perché (x, y) e (x, −y) sono entrambi nel sottogruppo. Quindi circa metà dei valori di x non esce mai: ci sono solo i valori per cui x³ + 7 è un quadrato. Per y dipende da p. ' + (P % 3 === 2 ? 'Qui p ≡ 2 (mod 3), quindi x → x³ è biiettiva e sull\'intera curva ogni y compare una sola volta; il sottogruppo ne contiene una parte.' : 'Qui p ≡ 1 (mod 3), quindi x³ = y² − 7 ha 0 o 3 soluzioni e ogni y compare 0 o 3 volte sull\'intera curva (a volte 1); il sottogruppo ne contiene una parte.') + ' A livello di singoli valori l\'output non è uniforme su [0, p).';
+  // bit
+  const nb = st.nb, bl = Array.from({ length: nb }, (_, j) => 'b' + j);
+  barChart($('cvBits'), { labels: bl, series: [{ values: st.bx, c: 'accent' }, { values: st.by, c: 'hi' }], ref: 0.5, ymax: 1, aspect: 0.5, fmt: (v) => Math.round(v * 100) + '%' });
+  legend('lgBits', [{ c: 'accent', name: 'x' }, { c: 'hi', name: 'y' }, { c: 'fg', name: '50% (bit equilibrato)' }]);
+  const expTop = (P - Math.pow(2, nb - 1)) / P;
+  $('rdBits').innerHTML = '<b>Lettura.</b> b0 è il bit meno significativo. Bit 0 di y: ' + pct(st.by[0]) + '. Bit più alto (b' + (nb - 1) + '): x ' + pct(st.bx[nb - 1]) + ', y ' + pct(st.by[nb - 1]) + '; con valori uniformi in [0, p) se ne aspetterebbe il ' + pct(expTop) + ', perché p non è una potenza di 2. I bit centrali restano vicini al 50%. Le coordinate non sono stringhe casuali di bit, per questo nei protocolli reali un punto passa da una funzione hash (KDF) prima di diventare una chiave simmetrica.';
+  // correlazione
+  const step = Math.max(1, Math.floor(m / 3000)), ks = new Int32Array(m); for (let i = 0; i < m; i++) ks[i] = i + 1;
+  scatter($('cvCorr'), { aspect: 0.5, xmax: m, ymax: P, xlabel: 'k', layers: [{ xs: ks, ys: subX, c: 'accent', size: m < 500 ? 6 : 2, alpha: .7, step }] });
+  $('rdCorr').innerHTML = '<b>Lettura.</b> Ogni punto è (k, x di kG). Correlazione di Pearson: r(k, x) = ' + f1(st.rkx, 3) + ', r(k, y) = ' + f1(st.rky, 3) + ', r(x<sub>k</sub>, x<sub>k+1</sub>) = ' + f1(st.rx1, 3) + '. Per dati indipendenti ci si aspetta valori dell\'ordine di 1/√m = ' + f1(1 / Math.sqrt(m), 3) + '. Anche con r vicino a zero esiste una relazione esatta: Q<sub>k+1</sub> = Q<sub>k</sub> + G per ogni k. La correlazione lineare non la vede.';
+  // valanga
+  const a = st.ava;
+  barChart($('cvAva'), { labels: a.ec.map((_, i) => 'k' + i), series: [{ values: a.ec, c: 'accent' }, { values: a.mx, c: 'hi' }, { values: a.id, c: 'pt' }], ref: 0.5, ymax: 1, aspect: 0.48, fmt: (v) => Math.round(v * 100) + '%' });
+  legend('lgAva', [{ c: 'accent', name: 'kG (x e y, ' + 2 * a.ob + ' bit)' }, { c: 'hi', name: 'hash di riferimento fmix32 (32 bit)' }, { c: 'pt', name: 'identità (k stesso)' }, { c: 'fg', name: '50% ideale' }]);
+  $('rdAva').innerHTML = '<b>Lettura.</b> Si inverte un bit di k alla volta (k0 = bit meno significativo) e si conta la frazione di bit d\'uscita che cambiano, su 1500 k casuali. Media: kG ' + pct(a.mEc) + ', hash di riferimento ' + pct(a.mMx) + ', identità ' + pct(a.mId) + '. Un hash ben progettato si avvicina al 50% per ogni bit. Su kG il cambio di un bit equivale a sommare o sottrarre 2<sup>i</sup>G, e l\'aritmetica modulare rimescola le coordinate. Il piccolo divario dal 50% viene in buona parte dai bit alti, che variano meno perché i valori sono minori di p. Un effetto di questo tipo è un sottoprodotto dell\'aritmetica, non una garanzia di sicurezza.';
+}
+
+function renderDiscussion() {
+  const st = S.st, tiny = st.tiny;
+  const a = tiny ? null : st.ava;
+  const n = S.n;
+  const rows = [
+    ['Determinismo e facilità in avanti', 'Stesso k, stesso Q. ' + dblAddOps(S.k, S.G).ops.length + ' operazioni per k = ' + S.k + '.', 'Essenziale: la chiave pubblica si calcola in fretta.', 'Essenziale: stesso input, stesso digest.'],
+    ['Difficoltà dell\'inversione', 'Brute force fino a ' + n + ' somme, baby-step giant-step circa ' + Math.ceil(Math.sqrt(n)) + '. Su secp256k1: 2²⁵⁶ e circa 2¹²⁸.', 'Proprietà centrale. Si basa sull\'ECDLP, un problema matematico.', 'Resistenza alla preimmagine. Si basa sulla costruzione, non su un problema noto.'],
+    ['Uniformità dell\'output', tiny ? '-' : 'χ²/df: x ' + f1(st.hx.chi / st.hx.df) + ', y ' + f1(st.hy.chi / st.hy.df) + '. Valori di x coperti: ' + pct(st.covX) + '.', 'Utile ma non richiesta. Con k uniforme anche Q è uniforme nel sottogruppo, ma le coordinate non lo sono su [0, p).', 'Attesa: l\'output deve sembrare casuale.'],
+    ['Distribuzione dei bit', tiny ? '-' : 'Bit alto di x: ' + pct(st.bx[st.nb - 1]) + '. Bit 0 di y: ' + pct(st.by[0]) + '.', 'Non richiesta. Le coordinate hanno struttura e vanno passate da un KDF.', 'Attesa: ogni bit di output a 1 con probabilità 1/2.'],
+    ['Correlazione input-output', tiny ? '-' : 'r(k, x) = ' + f1(st.rkx, 3) + '. Ma Q<sub>k+1</sub> = Q<sub>k</sub> + G.', 'Assenza di correlazione lineare necessaria ma non sufficiente: la relazione algebrica c\'è ed è usata.', 'Richiesta nessuna relazione sfruttabile.'],
+    ['Effetto valanga', tiny ? '-' : 'kG ' + pct(a.mEc) + ', fmix32 ' + pct(a.mMx) + ', identità ' + pct(a.mId) + '.', 'Non è un criterio di sicurezza. Compare in parte per caso.', 'Criterio di progetto: un bit in ingresso cambia circa metà dell\'uscita.'],
+    ['Struttura algebrica', '(a + b)G = aG + bG, verificabile nel riquadro sopra.', 'Voluta: rende possibili firme ECDSA e scambio di chiavi ECDH.', 'Da evitare: sarebbe una debolezza.'],
+    ['Collisioni e lunghezza dell\'input', 'k e k + ' + n + ' danno lo stesso Q. Nel dominio 1…' + (n - 1) + ' non ci sono collisioni.', 'Dominio fisso e mappa iniettiva: il tema non si pone.', 'Resistenza alle collisioni su input di lunghezza arbitraria, con output di lunghezza fissa.'],
+  ];
+  $('discBody').innerHTML = rows.map((r) => '<tr><td><b>' + r[0] + '</b></td><td>' + r[1] + '</td><td>' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('');
+}
+
+// ----- Prove algebriche -----
+$('hBtn').addEventListener('click', () => {
+  const clamp = (v) => Math.min(Math.max(1, Math.round(v) || 1), S.n - 1);
+  const a = clamp(+$('hA').value), b = clamp(+$('hB').value);
+  $('hA').value = a; $('hB').value = b;
+  const A = pt(a), B = pt(b), sum = add(A, B), direct = pt(a + b), ok = same(sum, direct);
+  $('homOut').innerHTML = a + 'G = ' + fmtP(A) + '<br>' + b + 'G = ' + fmtP(B) + '<br>' + a + 'G + ' + b + 'G = ' + fmtP(sum) + '<br>(' + a + ' + ' + b + ')G = ' + fmtP(direct) + '<br><span class="' + (ok ? 'ok' : 'bad') + '">' + (ok ? 'Uguali: la moltiplicazione per uno scalare rispetta la somma.' : 'Diversi (errore).') + '</span>';
+});
+$('dBtn').addEventListener('click', () => {
+  const Q = pt(S.k), t0 = performance.now(), br = bruteForce(Q, S.G), t1 = performance.now(), bs = bsgs(Q, S.G, S.n), t2 = performance.now();
+  $('dlpOut').innerHTML = 'Q = ' + fmtP(Q) + '<br>Brute force: k = ' + br.k + ' dopo ' + sci(br.steps) + ' somme (' + f1(t1 - t0, 1) + ' ms).<br>Baby-step giant-step: k = ' + bs.k + ' dopo circa ' + sci(bs.steps) + ' operazioni (' + f1(t2 - t1, 1) + ' ms).<br><span class="' + (br.k === S.k && bs.k === S.k ? 'ok' : 'bad') + '">' + (br.k === S.k && bs.k === S.k ? 'Entrambi trovano il k vero.' : 'Risultato incoerente.') + '</span><br>Su secp256k1 servirebbero 2²⁵⁶ somme col brute force e circa 3,4·10³⁸ (2¹²⁸) col baby-step giant-step.';
+});
+
+// ----- Animazione -----
+const anim = { ops: [], i: 0, phase: 0, t: 1, playing: false, speed: 1, last: 0, raf: 0, bg: null, bgKey: '' };
+const PH = [800, 1700, 900, 1300];
+const ease = (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+function setupAnim() {
+  stopAnim();
+  let mode = $('modeSel').value;
+  $('animNote').textContent = '';
+  if (mode === 'rep' && S.k > 60) { mode = 'fast'; $('animNote').textContent = 'Con k > 60 la somma ripetuta è troppo lunga: l\'animazione usa il double-and-add.'; }
+  else if (P > 101) $('animNote').textContent = 'L\'animazione è più leggibile con p = 17 o p = 97. Con p grande la griglia è troppo fitta' + (P > 3000 ? ' e le rette non vengono disegnate.' : '.');
+  anim.ops = mode === 'rep' ? repeatedOps(S.k, S.G).ops : dblAddOps(S.k, S.G).ops;
+  anim.i = 0; anim.phase = 0; anim.t = 1;
+  legend('animLegend', [{ c: 'pt', name: 'punti della curva' }, { c: 'accent', name: 'multipli già calcolati' }, { c: 'hi', name: 'retta e risultato corrente' }, { c: 'fg', name: 'punti da sommare' }]);
+  updateAnimUI(); drawAnim();
+}
+function stopAnim() { anim.playing = false; if (anim.raf) cancelAnimationFrame(anim.raf); anim.raf = 0; }
+function atEnd() { return anim.ops.length === 0 || (anim.i === anim.ops.length - 1 && anim.phase === 3 && anim.t >= 1); }
+function advance(animated) {
+  if (anim.phase < 3) anim.phase++;
+  else if (anim.i < anim.ops.length - 1) { anim.i++; anim.phase = 0; }
+  else { anim.t = 1; return false; }
+  anim.t = animated ? 0 : 1;
+  return true;
+}
+function tick(ts) {
+  if (!anim.playing) return;
+  const dt = Math.min(100, ts - anim.last); anim.last = ts;
+  anim.t += dt * anim.speed / PH[anim.phase];
+  if (anim.t >= 1) { anim.t = 1; if (!advance(true)) { anim.playing = false; } }
+  drawAnim(); updateAnimUI();
+  if (anim.playing) anim.raf = requestAnimationFrame(tick);
+}
+function play() {
+  if (anim.ops.length === 0) return;
+  if (atEnd()) { anim.i = 0; anim.phase = 0; anim.t = 0; }
+  anim.playing = true; anim.last = performance.now(); anim.raf = requestAnimationFrame(tick); updateAnimUI();
+}
+function updateAnimUI() {
+  const none = anim.ops.length === 0;
+  $('playBtn').textContent = anim.playing ? 'Pausa' : (atEnd() && !none ? 'Rigioca' : 'Play');
+  $('playBtn').disabled = none; $('stepBtn').disabled = none; $('prevBtn').disabled = none; $('rstBtn').disabled = none;
+  [...$('phases').children].forEach((s, i) => s.classList.toggle('on', !none && i === anim.phase));
+  $('animText').innerHTML = none ? '<h3>k = 1</h3><p>Q = 1G = G. Non c\'è nessuna somma da eseguire. Scegli un k più grande.</p>' : explain(anim.ops[anim.i], anim.phase, anim.i);
+}
+function explain(op, ph, i) {
+  const dbl = op.kind === 'dbl', A = op.A, B = op.B, p = P;
+  const sub = (n) => String(n).replace(/\d/g, (d) => '₀₁₂₃₄₅₆₇₈₉'[+d]);
+  let h = '<h3>Operazione ' + (i + 1) + ' di ' + anim.ops.length + '<br>' + op.from + 'G + ' + (dbl ? op.from + 'G' : 'G') + ' = ' + op.to + 'G</h3>';
+  const yp = mod(-op.R.y);
+  if (ph === 0) h += '<p>Si sommano A = ' + fmtP(A) + ' e B = ' + fmtP(B) + '.</p><p>' + (dbl ? 'I due punti coincidono: è un raddoppio, e la retta da usare è la tangente.' : 'I due punti sono diversi: la retta da usare passa per entrambi.') + '</p>';
+  if (ph >= 1) {
+    const num = dbl ? mod(3 * A.x * A.x) : mod(B.y - A.y), den = dbl ? mod(2 * A.y) : mod(B.x - A.x);
+    h += '<p>' + (dbl ? 'λ = 3x₁² / 2y₁' : 'λ = (y₂ − y₁) / (x₂ − x₁)') + '<br>= ' + num + ' / ' + den + ' = ' + num + ' · ' + inv(den) + ' = <b>' + op.s + '</b> (mod ' + p + ')</p>';
+    if (ph === 1) h += '<p>I punti arancioni sono la retta y = λ(x − x₁) + y₁ (mod ' + p + ').</p>';
+  }
+  if (ph >= 2) h += '<p>x₃ = λ² − x₁ − x₂ = <b>' + op.R.x + '</b><br>La retta incontra la curva in (' + op.R.x + ', ' + yp + ').</p>';
+  if (ph >= 3) h += '<p>Si riflette rispetto all\'asse x: y → p − y = ' + op.R.y + '.<br>Risultato: <b>' + op.to + 'G = ' + fmtP(op.R) + '</b></p>';
+  return h;
+}
+function paintBg(c, w, h, cs) {
+  const M = 30, cell = (w - 2 * M) / P;
+  c.fillStyle = cs.surface; c.fillRect(0, 0, w, h);
+  c.font = '11px ' + cs.mono; c.textBaseline = 'middle'; c.fillStyle = cs.muted;
+  if (P <= 64) {
+    c.strokeStyle = cs.grid; c.lineWidth = 1; c.beginPath();
+    for (let i = 0; i <= P; i++) { const a = Math.round(M + i * cell) + .5; c.moveTo(a, M); c.lineTo(a, h - M); c.moveTo(M, Math.round(M + i * cell) + .5); c.lineTo(w - M, Math.round(M + i * cell) + .5); }
+    c.stroke();
+  } else { c.strokeStyle = cs.grid; c.strokeRect(M + .5, M + .5, w - 2 * M, h - 2 * M); }
+  const tk = P <= 20 ? 1 : P <= 64 ? 4 : Math.round(P / 8 / 5) * 5 || 1;
+  for (let v = 0; v < P; v += tk) {
+    c.textAlign = 'center'; c.fillText(String(v), M + (v + .5) * cell, h - M + 13);
+    c.textAlign = 'right'; c.fillText(String(v), M - 6, h - M - (v + .5) * cell);
+  }
+  c.fillStyle = cs.pt;
+  const r = Math.max(.9, Math.min(3.2, cell * .3));
+  for (let i = 0; i < S.cx.length; i++) { c.beginPath(); c.arc(M + (S.cx[i] + .5) * cell, h - M - (S.cy[i] + .5) * cell, r, 0, 7); c.fill(); }
+}
+function drawAnim() {
+  const cv = $('cvAnim'), { ctx, w, h } = setup(cv, 1), cs = colors(), dpr = window.devicePixelRatio || 1;
+  const key = [w, P, dpr, S.cx.length, themeStamp].join('|');
+  if (anim.bgKey !== key) {
+    const b = document.createElement('canvas'); b.width = Math.round(w * dpr); b.height = Math.round(h * dpr);
+    const c = b.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); paintBg(c, w, h, cs); anim.bg = b; anim.bgKey = key;
+  }
+  ctx.clearRect(0, 0, w, h); ctx.drawImage(anim.bg, 0, 0, w, h);
+  const M = 30, cell = (w - 2 * M) / P, X = (x) => M + (x + .5) * cell, Y = (y) => h - M - (y + .5) * cell;
+  const r = Math.max(.9, Math.min(3.2, cell * .3)), small = P <= 101;
+  ctx.font = '600 11px ' + cs.mono; ctx.textBaseline = 'middle';
+  const label = (txt, x, y, col) => { ctx.textAlign = 'left'; ctx.lineWidth = 3; ctx.strokeStyle = cs.surface; ctx.strokeText(txt, x + 8, y - 9); ctx.fillStyle = col; ctx.fillText(txt, x + 8, y - 9); };
+  const dot = (x, y, rad, col, ring) => { ctx.beginPath(); ctx.arc(X(x), Y(y), rad, 0, 7); if (ring) { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke(); } else { ctx.fillStyle = col; ctx.fill(); } };
+  const ops = anim.ops, rad = Math.max(3, r * 1.5);
+  const doneUpTo = ops.length ? anim.i : 0;
+  for (let j = 0; j < doneUpTo; j++) { const R = ops[j].R; dot(R.x, R.y, rad, cs.accent); if (small) label(ops[j].to + 'G', X(R.x), Y(R.y), cs.accent); }
+  dot(S.G.x, S.G.y, rad + 1, cs.accent); label('G', X(S.G.x), Y(S.G.y), cs.accent);
+  if (!ops.length) return;
+  const op = ops[anim.i], ph = anim.phase, t = anim.t, A = op.A, B = op.B, dense = P > 3000;
+  if (ph >= 1 && !dense) {
+    const cnt = ph === 1 ? Math.floor(t * P) + 1 : P;
+    ctx.fillStyle = cs.hi; ctx.globalAlpha = .6;
+    for (let x = 0; x < cnt && x < P; x++) { const y = mod(op.s * (x - A.x) + A.y); ctx.beginPath(); ctx.arc(X(x), Y(y), Math.max(1, r * .85), 0, 7); ctx.fill(); }
+    ctx.globalAlpha = 1;
+  }
+  const yp = mod(-op.R.y);
+  if (ph === 3 && !dense) {
+    ctx.fillStyle = cs.hi; ctx.globalAlpha = .35;
+    for (let y = 0; y < P; y++) { ctx.beginPath(); ctx.arc(X(op.R.x), Y(y), Math.max(1, r * .8), 0, 7); ctx.fill(); }
+    ctx.globalAlpha = 1;
+  }
+  dot(A.x, A.y, rad + 2, cs.fg, true); if (!(A.x === B.x && A.y === B.y)) dot(B.x, B.y, rad + 2, cs.fg, true);
+  if (small || true) { label(op.kind === 'dbl' ? 'A = B' : 'A', X(A.x), Y(A.y), cs.fg); if (op.kind !== 'dbl') label('B', X(B.x), Y(B.y), cs.fg); }
+  if (ph === 2) { dot(op.R.x, yp, rad + 1, cs.hi, true); label('−R', X(op.R.x), Y(yp), cs.hi); }
+  if (ph === 3) {
+    const yy = yp + (op.R.y - yp) * ease(t);
+    ctx.beginPath(); ctx.arc(X(op.R.x), Y(yy), rad + 2, 0, 7); ctx.fillStyle = cs.hi; ctx.fill();
+    label(t >= 1 ? op.to + 'G' : 'R', X(op.R.x), Y(yy), cs.hi);
+  }
+}
+
+$('playBtn').addEventListener('click', () => { if (anim.playing) { stopAnim(); updateAnimUI(); } else play(); });
+$('stepBtn').addEventListener('click', () => { stopAnim(); if (anim.t < 1) anim.t = 1; else advance(false); drawAnim(); updateAnimUI(); });
+$('prevBtn').addEventListener('click', () => {
+  stopAnim(); anim.t = 1;
+  if (anim.phase > 0) anim.phase--; else if (anim.i > 0) { anim.i--; anim.phase = 3; }
+  drawAnim(); updateAnimUI();
+});
+$('rstBtn').addEventListener('click', () => { stopAnim(); anim.i = 0; anim.phase = 0; anim.t = 1; drawAnim(); updateAnimUI(); });
+$('spdSel').addEventListener('change', () => { anim.speed = +$('spdSel').value; });
+$('modeSel').addEventListener('change', setupAnim);
+
+// ----- controlli principali -----
+function readApply(e) {
+  const gx = $('gx').value === '' ? null : +$('gx').value, gy = +$('gy').value, k = +$('kIn').value;
+  // Invio genera sia keydown sia change: se non è cambiato nulla non si ricalcola, così il messaggio resta visibile.
+  if (!(e && e.type === 'click') && gx === S.G.x && gy === S.G.y && k === S.k) return;
+  configure({ p: S.p, gx, gy, k });
+}
+function loadPreset(p) { if (p === 17) configure({ p: 17, gx: 1, gy: 5, k: 6, quiet: true }); else configure({ p, gx: null, k: 1234, quiet: true }); }
+$('applyBtn').addEventListener('click', readApply);
+['gx', 'kIn'].forEach((id) => $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') readApply(); }));
+['gx', 'gy', 'kIn'].forEach((id) => $(id).addEventListener('change', readApply));
+$('pSel').addEventListener('change', () => loadPreset(+$('pSel').value));
+$('randBtn').addEventListener('click', () => { $('kIn').value = 1 + Math.floor(Math.random() * (S.n - 1)); readApply({ type: 'click' }); });
+$('resetBtn').addEventListener('click', () => loadPreset(17));
+
+function redrawAll() { themeStamp++; if (S.st) { renderStats(); } drawAnim(); }
+let rz = 0;
+window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(redrawAll, 150); });
+try { new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] }); } catch (e) {}
+try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll); } catch (e) {}
+
+loadPreset(17);
 </script>
-</body>
-</html>
+
+</body></html>
