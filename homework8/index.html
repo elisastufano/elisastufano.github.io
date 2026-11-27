@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07131c">
+<meta name="description" content="An interactive study of correlation and linear regression: least squares for a and b, the two regression lines, r as the geometric mean of the regression coefficients, and a proof that independence implies uncorrelation.">
+<title>Probability Lab — Correlation & Regression</title>
+<style>
+:root{--bg:#07131c;--bg2:#0a1b26;--panel:#102431;--panel2:#142d3a;--line:#2a4654;--muted:#9bb4bf;--dim:#7895a2;--ink:#edf7f7;--mint:#7ee8d3;--cyan:#65c9ef;--blue:#8ca9ff;--purple:#c5a4f4;--peach:#ffc38f;--red:#ff8d91;--green:#8dd7a8;--shadow:0 16px 45px #0004}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.62;-webkit-font-smoothing:antialiased}h1,h2,h3,h4,p{margin:0}h1,h2,h3{line-height:1.15;letter-spacing:-.04em}h1{font-size:clamp(2.8rem,6vw,5.4rem);font-weight:790}h2{font-size:clamp(1.8rem,3vw,2.65rem);font-weight:740}h3{font-size:1.14rem;font-weight:700}p{color:#b2c6cd}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--mint);outline-offset:3px}.wrap{width:min(1280px,calc(100% - 48px));margin:auto}.topbar{position:sticky;top:0;z-index:20;background:#07131ceF;border-bottom:1px solid #263f4c;backdrop-filter:blur(18px)}.nav{height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:11px;font-weight:850;letter-spacing:.07em;font-size:.86rem;white-space:nowrap}.brandmark{width:37px;height:37px;border-radius:11px;background:#173b3b;border:1px solid #3e7770;color:var(--mint);display:grid;place-items:center;font-size:1.2rem}.links{display:flex;gap:22px;font-size:.83rem;color:#a9bec6}.links a:hover{color:var(--mint)}.status{display:flex;align-items:center;gap:8px;color:var(--mint);font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}.pulse{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 13px var(--mint)}
+.hero{position:relative;overflow:hidden;border-bottom:1px solid #25414f;background:radial-gradient(ellipse 700px 430px at 90% 20%,#14685a30,transparent 75%),radial-gradient(ellipse 580px 400px at 3% 90%,#3b4c7b25,transparent 75%)}.hero:before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(#4a7c851a 1px,transparent 1px),linear-gradient(90deg,#4a7c851a 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to right,transparent 4%,#000 95%)}.heroGrid{position:relative;display:grid;grid-template-columns:1.3fr .7fr;gap:56px;align-items:center;padding:80px 0 84px}.eyebrow,.kicker{color:var(--mint);font-size:.72rem;font-weight:820;letter-spacing:.15em;text-transform:uppercase}.eyebrow{margin-bottom:22px}.hero h1 em{color:var(--mint);font-style:normal}.lead{max-width:730px;margin-top:23px;font-size:1.05rem;line-height:1.82;color:#b6cbd1}.heroLink{display:inline-flex;margin-top:25px;gap:10px;color:var(--mint);font-weight:750}.heroCard{padding:25px;border:1px solid #3d6a68;border-radius:20px;background:linear-gradient(150deg,#17413d,#0b2330 85%);box-shadow:var(--shadow)}.heroCard small{color:#a5c4c0;letter-spacing:.12em;text-transform:uppercase;font-weight:750}.heroFormula{font-size:2rem;font-weight:760;letter-spacing:-.06em;color:#ecfffa;margin:17px 0}.heroCard p{font-size:.88rem;line-height:1.75}.heroStats{display:grid;grid-template-columns:1fr 1fr;gap:12px;border-top:1px solid #426b68;margin-top:20px;padding-top:17px}.heroStats b{display:block;font-size:1.35rem;color:#e9fffa}.heroStats span{font-size:.72rem;color:#a5c4c0}
+.section{padding-top:70px}.sectionHead{display:flex;justify-content:space-between;align-items:end;gap:25px;margin-bottom:23px}.sectionHead .kicker{margin-bottom:10px}.sectionHead>p{max-width:560px;font-size:.9rem;line-height:1.75}.card{background:linear-gradient(160deg,#132a37,#0e202b);border:1px solid var(--line);border-radius:17px;box-shadow:0 5px 25px #0002;min-width:0}.pad{padding:24px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}.grid2>*{min-width:0}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.grid3>*{min-width:0}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.metric{padding:19px}.metricLabel{font-size:.7rem;color:#a1bac3;font-weight:750;letter-spacing:.04em;text-transform:uppercase}.metricValue{font-size:clamp(1.35rem,2vw,1.9rem);font-weight:800;letter-spacing:-.05em;color:#f5ffff;margin:7px 0 2px;font-variant-numeric:tabular-nums}.metricValue.mint{color:var(--mint)}.metricValue.peach{color:var(--peach)}.metricHelp{font-size:.72rem;color:#8da8b2}.tag{display:inline-flex;padding:5px 9px;border:1px solid #3c6667;border-radius:8px;background:#143638;color:var(--mint);font-size:.7rem;font-weight:800}.tag.blue{color:#a9c5ff;border-color:#445c91;background:#1b2c4b}.tag.peach{color:var(--peach);border-color:#806344;background:#3a2c20}.muted{color:var(--muted)}.small{font-size:.82rem}.tiny{font-size:.72rem}.formula{background:#091d28;border:1px solid #345260;border-radius:10px;padding:14px 16px;color:#e4fff7;font-family:ui-serif,Georgia,serif;font-size:1.07rem;overflow-x:auto;white-space:nowrap;margin:14px 0}.formula strong{color:var(--mint)}.note{border-left:3px solid var(--mint);padding:12px 15px;background:#11333775;border-radius:0 9px 9px 0;color:#b6cecf;font-size:.83rem;line-height:1.72;margin-top:14px}.note.warn{border-color:var(--peach);background:#3b2c2070;color:#e6c7a7}.note.blue{border-color:var(--blue);background:#1c2d4d70;color:#c1d0f2}.tableWrap{overflow-x:auto;max-width:100%;width:100%;min-width:0}.dataTable{border-collapse:collapse;width:100%;font-size:.83rem;min-width:480px}.dataTable th{color:#a4bdc6;text-transform:uppercase;letter-spacing:.06em;font-size:.68rem;text-align:left;border-bottom:1px solid #3a5864;padding:11px 12px;white-space:nowrap}.dataTable td{padding:12px;border-bottom:1px solid #263f4c;color:#dce9ed;font-variant-numeric:tabular-nums}.dataTable tr:last-child td{border-bottom:0}.dataTable td.num{text-align:right}.dataTable td.highlight{color:var(--mint);font-weight:750}.chartBox{height:290px;position:relative;min-width:0}.chartBox.small{height:230px}.chartBox canvas{width:100%;height:100%;display:block}.legend{display:flex;flex-wrap:wrap;gap:15px;margin-top:11px;color:#a2b8c1;font-size:.74rem}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}.field label{display:flex;justify-content:space-between;gap:10px;font-size:.84rem;font-weight:720;color:#dce9ec}.field output{color:var(--mint);font-variant-numeric:tabular-nums}.field input[type=range]{width:100%;accent-color:var(--mint);margin:10px 0 1px}.field input[type=number],.field select,.field textarea{width:100%;background:#091d27;border:1px solid #3a5865;color:#eef8f8;border-radius:9px;padding:10px 11px;margin-top:7px}.field input[type=number]{font-variant-numeric:tabular-nums}.field small{display:block;font-size:.71rem;color:#829faa;margin-top:4px}.controls{padding:22px 24px}.controlGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:25px;margin:12px 0 20px}.btn{border:1px solid #476572;border-radius:10px;background:#193744;color:#e8f7f8;font-weight:750;font-size:.82rem;padding:10px 15px}.btn:hover{background:#28515e}.btn.primary{background:var(--mint);color:#06292a;border-color:var(--mint)}.btn.primary:hover{background:#b5fff0}.btn.outline{background:transparent}.btnrow{display:flex;flex-wrap:wrap;gap:9px}.pathCards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.modeCard{padding:21px}.modeCard h3{margin:12px 0 8px}.modeCard p{font-size:.81rem;line-height:1.72}.modeCard .formula{font-size:.9rem;margin:11px 0}.modeCard .mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#153d3a;color:var(--mint);font-weight:850}.hierarchy{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:17px;background:#0b1e29;border:1px solid #304b59;border-radius:12px}.hierarchy span{padding:8px 12px;border-radius:8px;background:#173b3c;color:#c9f8ed;font-size:.78rem;font-weight:750}.hierarchy i{font-style:normal;color:#9cb5bf}.subhead{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:14px}.subhead p{font-size:.8rem;margin-top:5px}
+
+/* Bayesian controls */
+.bayesGrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:17px}.probDisplay{padding:21px;border:1px solid #416c66;background:linear-gradient(140deg,#143b38,#102b36);border-radius:14px}.probDisplay .big{font-size:2.65rem;color:var(--mint);letter-spacing:-.07em;font-weight:850;font-variant-numeric:tabular-nums}.probDisplay p{font-size:.79rem;color:#b7cecb}.probDisplay .sub{display:flex;justify-content:space-between;gap:10px;border-top:1px solid #426b67;padding-top:12px;margin-top:12px;font-size:.77rem;color:#b8d0cd}.bayesControls{display:grid;grid-template-columns:1fr 1fr;gap:15px}.odds{font-family:ui-serif,Georgia,serif;font-size:1.05rem;color:#e5f8f1;background:#0a1e27;padding:12px;border-radius:9px}.densityCanvas{height:265px}.densityCanvas canvas{width:100%;height:100%;display:block}.calloutGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.callout{background:#0d212c;border:1px solid #2c4a57;border-radius:12px;padding:15px}.callout span{font-size:.7rem;color:#93adb7;text-transform:uppercase;font-weight:750}.callout b{display:block;font-size:1.25rem;color:#f1fbfb;margin-top:4px;font-variant-numeric:tabular-nums}.footer{margin-top:78px;border-top:1px solid #2a404b;padding:28px 0 44px;color:#809aa5;font-size:.76rem}.footerRow{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.sources a{color:var(--mint);text-decoration:underline;text-underline-offset:3px}
+@media(max-width:1050px){.links{gap:13px}.pathCards{grid-template-columns:repeat(2,1fr)}.grid4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:780px){.wrap{width:min(100% - 32px,1280px)}.nav{height:63px}.links{display:none}.heroGrid{grid-template-columns:1fr;gap:26px;padding:58px 0}.heroCard{max-width:none}.section{padding-top:52px}.sectionHead{display:block}.sectionHead>p{margin-top:10px}.grid2,.bayesGrid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.controlGrid{grid-template-columns:1fr 1fr;gap:18px}.calloutGrid{grid-template-columns:1fr 1fr}.chartBox{height:260px}}
+@media(max-width:520px){.wrap{width:calc(100% - 26px)}.brand{font-size:.74rem}.brandmark{width:33px;height:33px}.status{font-size:0}.hero h1{font-size:2.7rem}.lead{font-size:.95rem}.pad,.controls{padding:18px 15px}.grid3,.pathCards,.grid4,.controlGrid,.bayesControls,.calloutGrid{grid-template-columns:1fr}.metric{padding:15px}.metricValue{font-size:1.45rem}.modeCard{padding:17px}.chartBox{height:235px}.heroStats{gap:7px}.btnrow .btn{flex:1}.hierarchy{gap:6px}.hierarchy span{font-size:.7rem;padding:7px 9px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+/* Correlation & regression additions */
+.labGrid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:17px}.labGrid>*{min-width:0}
+.field textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;line-height:1.5;resize:vertical;min-height:170px}
+.proofBox{border:1px solid #3a5f62;background:linear-gradient(160deg,#0f2a35,#0b1f2a);border-radius:15px;padding:22px 24px}
+.proofBox+.proofBox{margin-top:16px}
+.proofBox h3{margin-bottom:10px}.proofBox p{font-size:.88rem;line-height:1.8;margin-top:9px}
+.proofBox .qed{display:block;text-align:right;color:var(--mint);font-size:1.05rem;margin-top:8px}
+.stepNo{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:#173b3c;color:var(--mint);font-size:.74rem;font-weight:850;margin-right:8px}
+.dataTable td.ok{color:var(--green);font-weight:800;text-align:center}.dataTable td.bad{color:var(--red);font-weight:800;text-align:center}
+.dataTable tr.total td{border-top:1px solid #3a5864;color:var(--mint);font-weight:750}
+.msg{font-size:.76rem;margin-top:8px;color:#8fd7bd}.msg.err{color:var(--peach)}
+.checks{display:flex;flex-wrap:wrap;gap:18px;margin-top:12px;font-size:.82rem;color:#dce9ec}.checks label{display:flex;align-items:center;gap:7px}.checks select{width:auto;margin:0;padding:6px 9px}
+.scatterBox{height:380px}
+.eq{font-size:.95rem}
+@media(max-width:780px){.labGrid{grid-template-columns:1fr}.scatterBox{height:320px}}
+.checks select{background:#091d27;border:1px solid #3a5865;color:#eef8f8;border-radius:9px}.dataTable th,.metricLabel{text-transform:none;letter-spacing:.02em}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap nav"><a class="brand" href="#top"><span class="brandmark">ρ</span><span>PROBABILITY LAB <span style="color:#7897a3;font-weight:500">/ 06</span></span></a><nav class="links"><a href="#correlation">Correlation</a><a href="#leastsquares">Finding a and b</a><a href="#lines">Two lines</a><a href="#lab">Regression Lab</a><a href="#proof">Proof</a><a href="#references">References</a></nav><div class="status"><i class="pulse"></i> Interactive study</div></div></header>
+<main id="top">
+<section class="hero"><div class="wrap heroGrid"><div><p class="eyebrow">Statistics / Linear Regression</p><h1>From covariance<br>to the <em>best line.</em></h1><p class="lead">Explore correlation as a measure of linear association, solve the least-squares problem for the intercept <b>a</b> and slope <b>b</b>, compute both regression lines for any dataset, verify that |r| is the geometric mean of the two regression coefficients, and prove that independence implies uncorrelation.</p><a class="heroLink" href="#lab">Open the regression lab <span>↗</span></a></div><aside class="heroCard"><small>Key identity</small><div class="heroFormula">r² = b · b′</div><p>The slope of y on x and the slope of x on y always have the sign of the covariance, and their product is exactly the squared correlation coefficient.</p><div class="heroStats"><div><b>2</b><span>Regression lines</span></div><div><b>1</b><span>Geometric mean = |r|</span></div></div></aside></div></section>
+
+<section class="section wrap" id="correlation"><div class="sectionHead"><div><p class="kicker">01 / Correlation</p><h2>Covariance and the correlation coefficient</h2></div><p>Covariance measures how two variables move together. Dividing by the standard deviations removes the units and gives a number between −1 and 1.</p></div>
+<div class="grid2"><article class="card pad"><h3>Definitions</h3><p class="small" style="margin-top:8px">For random variables X, Y with finite variances, μ<sub>X</sub> = E[X], μ<sub>Y</sub> = E[Y]:</p><div class="formula">Cov(X,Y) = E[(X − μ<sub>X</sub>)(Y − μ<sub>Y</sub>)] = E[XY] − μ<sub>X</sub>μ<sub>Y</sub></div><div class="formula">ρ = Corr(X,Y) = Cov(X,Y) / (σ<sub>X</sub> σ<sub>Y</sub>)</div><p class="small">For a sample (x₁,y₁),…,(x<sub>n</sub>,y<sub>n</sub>) with means x̄, ȳ define the sums of squares and products</p><div class="formula">S<sub>xx</sub> = Σ(xᵢ − x̄)² , S<sub>yy</sub> = Σ(yᵢ − ȳ)² , S<sub>xy</sub> = Σ(xᵢ − x̄)(yᵢ − ȳ)</div><div class="formula">r = S<sub>xy</sub> / √(S<sub>xx</sub> S<sub>yy</sub>)</div><p class="small">The factors 1/n or 1/(n−1) cancel in r, so r does not depend on which convention is used.</p></article>
+<article class="card pad"><h3>Why |ρ| ≤ 1</h3><p class="small" style="margin-top:8px">Let U = X − μ<sub>X</sub>, V = Y − μ<sub>Y</sub>. For every real t,</p><div class="formula">0 ≤ E[(U − tV)²] = E[U²] − 2t E[UV] + t² E[V²]</div><p class="small">A quadratic in t that is never negative has non-positive discriminant:</p><div class="formula">(E[UV])² ≤ E[U²] E[V²] &nbsp;⇒&nbsp; Cov(X,Y)² ≤ σ<sub>X</sub>² σ<sub>Y</sub>²</div><p class="small">Equality holds iff U = tV almost surely, i.e. iff Y is an exact linear function of X. So ρ = ±1 exactly in the perfectly linear case (Cauchy–Schwarz inequality).</p></article></div>
+<div class="grid3" style="margin-top:16px"><article class="card pad"><span class="tag">Properties</span><p class="small" style="margin-top:11px">Dimensionless. Invariant under positive affine maps (X → aX + c, a &gt; 0) and changes sign under a negative one. Symmetric: Corr(X,Y) = Corr(Y,X).</p></article><article class="card pad"><span class="tag blue">What it measures</span><p class="small" style="margin-top:11px">Only <b>linear</b> association. A perfect non-linear relation such as Y = X² can have ρ = 0. It is also sensitive to outliers and says nothing about causation.</p></article><article class="card pad"><span class="tag peach">Standardized form</span><p class="small" style="margin-top:11px">With z-scores z<sub>x</sub> = (x − x̄)/s<sub>x</sub>, z<sub>y</sub> = (y − ȳ)/s<sub>y</sub>, the correlation is the average product of the z-scores: r = (1/n) Σ zₓ·z<sub>y</sub> (with s computed using divisor n).</p></article></div></section>
+
+<section class="section wrap" id="leastsquares"><div class="sectionHead"><div><p class="kicker">02 / Least squares</p><h2>Solving the regression problem for a and b</h2></div><p>We look for the line ŷ = a + b·x that makes the vertical errors as small as possible in the sum-of-squares sense.</p></div>
+<div class="card pad"><h3>The optimization problem</h3><div class="formula">minimize &nbsp; S(a,b) = Σᵢ (yᵢ − a − b xᵢ)²</div>
+<p class="small"><span class="stepNo">1</span><b>Derivative with respect to a.</b> Setting ∂S/∂a = −2 Σ(yᵢ − a − b xᵢ) = 0 gives</p><div class="formula">ȳ = a + b x̄ &nbsp;⇒&nbsp; <strong>a = ȳ − b x̄</strong></div><p class="small">The line always passes through the centroid (x̄, ȳ).</p>
+<p class="small" style="margin-top:14px"><span class="stepNo">2</span><b>Derivative with respect to b.</b> Setting ∂S/∂b = −2 Σ xᵢ(yᵢ − a − b xᵢ) = 0 and substituting a:</p><div class="formula">Σ xᵢ(yᵢ − ȳ) = b Σ xᵢ(xᵢ − x̄)</div><p class="small">Since Σ x̄(yᵢ − ȳ) = 0 and Σ x̄(xᵢ − x̄) = 0, we may replace xᵢ by (xᵢ − x̄) on both sides:</p><div class="formula">S<sub>xy</sub> = b S<sub>xx</sub> &nbsp;⇒&nbsp; <strong>b = S<sub>xy</sub> / S<sub>xx</sub> = r · s<sub>y</sub> / s<sub>x</sub></strong></div>
+<p class="small" style="margin-top:14px"><span class="stepNo">3</span><b>It is a minimum.</b> The Hessian of S is [[2n, 2Σxᵢ],[2Σxᵢ, 2Σxᵢ²]] with determinant 4(nΣxᵢ² − (Σxᵢ)²) = 4n S<sub>xx</sub> &gt; 0 as soon as the xᵢ are not all equal, and 2n &gt; 0. So S is strictly convex and the stationary point is the unique global minimum.</p></div>
+<div class="grid2" style="margin-top:16px"><article class="card pad"><h3>Population version</h3><div class="formula">b = Cov(X,Y) / Var(X) = ρ σ<sub>Y</sub> / σ<sub>X</sub></div><div class="formula">a = μ<sub>Y</sub> − b μ<sub>X</sub></div><p class="small">This is the best linear predictor of Y given X in the L² sense: the residual ε = Y − a − bX satisfies E[ε] = 0 and E[εX] = 0 (the normal equations), i.e. it is uncorrelated with X.</p></article>
+<article class="card pad"><h3>Residual variance and R²</h3><p class="small" style="margin-top:8px">Substituting b = S<sub>xy</sub>/S<sub>xx</sub> in S:</p><div class="formula">SSE = S<sub>yy</sub> − 2b S<sub>xy</sub> + b² S<sub>xx</sub> = S<sub>yy</sub> − S<sub>xy</sub>²/S<sub>xx</sub> = S<sub>yy</sub>(1 − r²)</div><p class="small">Since SSE ≥ 0 this gives again |r| ≤ 1, and the proportion of the variance of y explained by the line is <b>R² = r²</b>.</p></article></div></section>
+
+<section class="section wrap" id="lines"><div class="sectionHead"><div><p class="kicker">03 / Two regression lines</p><h2>Why there are two lines and what r has to do with them</h2></div><p>Regression is not symmetric: minimizing vertical errors (y on x) gives a different line than minimizing horizontal errors (x on y).</p></div>
+<div class="grid2"><article class="card pad"><h3>The two fitted lines</h3><div class="formula">y on x: &nbsp; ŷ = a + b x , &nbsp; b = S<sub>xy</sub>/S<sub>xx</sub> , &nbsp; a = ȳ − b x̄</div><div class="formula">x on y: &nbsp; x̂ = a′ + b′ y , &nbsp; b′ = S<sub>xy</sub>/S<sub>yy</sub> , &nbsp; a′ = x̄ − b′ ȳ</div><p class="small">Both pass through the centroid (x̄, ȳ). Drawn in the same (x, y) plane, the second line has slope 1/b′.</p></article>
+<article class="card pad"><h3>Geometric mean of the coefficients</h3><div class="formula">b · b′ = S<sub>xy</sub>² / (S<sub>xx</sub> S<sub>yy</sub>) = r²</div><div class="formula"><strong>|r| = √(b · b′)</strong> &nbsp;, &nbsp; r = sign(b)·√(b · b′)</div><p class="small">Since S<sub>xx</sub>, S<sub>yy</sub> &gt; 0, b and b′ have the sign of S<sub>xy</sub>, hence the sign of r. Their product is non-negative and its square root is the geometric mean, which equals |r|.</p></article></div>
+<div class="card pad" style="margin-top:16px"><h3>What happens for different values of r</h3><div class="tableWrap"><table class="dataTable"><thead><tr><th>Case</th><th>Coefficients</th><th>Geometry of the two lines</th></tr></thead><tbody><tr><td>|r| = 1</td><td>b′ = 1/b</td><td>The two lines coincide: all points lie on one line.</td></tr><tr><td>0 &lt; |r| &lt; 1</td><td>b·b′ = r² &lt; 1</td><td>Two distinct lines crossing at (x̄, ȳ); the x-on-y line is steeper in the plane. In z-scores their slopes are r and 1/r (regression to the mean).</td></tr><tr><td>r = 0</td><td>b = b′ = 0</td><td>Horizontal line y = ȳ and vertical line x = x̄: perpendicular.</td></tr></tbody></table></div><div class="note blue">Neither line is the inverse of the other unless |r| = 1, because each minimizes a different loss. Using r as a "slope in standardized units" shows it: ẑ<sub>y</sub> = r·z<sub>x</sub> and ẑ<sub>x</sub> = r·z<sub>y</sub>.</div></div>
+<div class="card pad" style="margin-top:16px"><div class="subhead"><div><h3>Link with online algorithms</h3><p>Both lines can be computed in a single pass with O(1) memory, using the Welford-style update.</p></div><span class="tag">Welford 1962</span></div><div class="formula">x̄<sub>n</sub> = x̄<sub>n−1</sub> + (x<sub>n</sub> − x̄<sub>n−1</sub>)/n , &nbsp; ȳ<sub>n</sub> = ȳ<sub>n−1</sub> + (y<sub>n</sub> − ȳ<sub>n−1</sub>)/n</div><div class="formula">S<sub>xy,n</sub> = S<sub>xy,n−1</sub> + (x<sub>n</sub> − x̄<sub>n−1</sub>)(y<sub>n</sub> − ȳ<sub>n</sub>)</div><p class="small">The same update with y replaced by x (or x by y) gives S<sub>xx</sub> and S<sub>yy</sub>. The lab below checks that the online S<sub>xy</sub> agrees with the two-pass value.</p></div></section>
+
+<section class="section wrap" id="lab"><div class="sectionHead"><div><p class="kicker">04 / Regression lab</p><h2>Compute both lines for any dataset</h2></div><p>Choose an example, paste your own (x, y) pairs, or generate a sample with a chosen correlation. Everything below updates live.</p></div>
+<div class="labGrid"><div class="card pad"><h3>Dataset</h3><div class="field" style="margin-top:12px"><label for="preset">Example</label><select id="preset"><option value="study">Study hours vs exam score</option><option value="negative">Car age vs price (negative)</option><option value="weak">Weak association</option><option value="perfect">Perfect line (r = 1)</option><option value="parabola">Parabola y = x² (dependent, r = 0)</option><option value="outlier">One outlier</option><option value="custom">Custom / generated</option></select></div>
+<div class="field" style="margin-top:14px"><label for="dataIn">Pairs "x, y" (one per line)</label><textarea id="dataIn" spellcheck="false"></textarea><small>Separators: comma, space, tab or semicolon. Decimal point only. A header line is ignored.</small></div><div class="msg" id="parseMsg"></div>
+<h3 style="margin-top:20px">Generate a sample</h3><div class="bayesControls" style="margin-top:8px"><div class="field"><label for="genRho">Target ρ <output id="genRhoOut">0.70</output></label><input id="genRho" type="range" min="-1" max="1" step="0.05" value="0.7"></div><div class="field"><label for="genN">Points n <output id="genNOut">40</output></label><input id="genN" type="range" min="5" max="200" step="1" value="40"></div></div><div class="btnrow" style="margin-top:14px"><button class="btn primary" id="genBtn" type="button">Generate new sample</button></div></div>
+<div class="card pad"><div class="subhead"><div><h3>Scatter plot and regression lines</h3><p>Both lines pass through the centroid.</p></div><span class="tag blue">Interactive</span></div><div class="chartBox scatterBox"><canvas id="scatter"></canvas></div><div class="legend"><span><i style="background:var(--mint)"></i>y on x</span><span><i style="background:var(--peach)"></i>x on y</span><span><i style="background:#fff"></i>Data points</span><span><i style="background:var(--purple)"></i>Centroid (x̄, ȳ)</span><span class="muted">Horizontal axis: x · Vertical axis: y</span></div><div class="checks"><label><input type="checkbox" id="stdChk"> Standardized view (z-scores)</label><label>Residuals <select id="resMode"><option value="n">none</option><option value="v">vertical (y on x)</option><option value="h">horizontal (x on y)</option></select></label></div></div></div>
+
+<div class="grid4" style="margin-top:16px"><div class="card metric"><div class="metricLabel">Sample size n</div><div class="metricValue" id="mN">—</div><div class="metricHelp" id="mMeans">—</div></div><div class="card metric"><div class="metricLabel">Correlation r</div><div class="metricValue mint" id="mR">—</div><div class="metricHelp" id="mStrength">—</div></div><div class="card metric"><div class="metricLabel">R² = r²</div><div class="metricValue" id="mR2">—</div><div class="metricHelp">Variance of y explained</div></div><div class="card metric"><div class="metricLabel">√(b · b′) = |r| ?</div><div class="metricValue peach" id="mGM">—</div><div class="metricHelp" id="mGMhelp">—</div></div></div>
+<div class="grid4" style="margin-top:13px"><div class="card metric"><div class="metricLabel">Slope b (y on x)</div><div class="metricValue" id="mB">—</div><div class="metricHelp">b = S<sub>xy</sub>/S<sub>xx</sub></div></div><div class="card metric"><div class="metricLabel">Intercept a</div><div class="metricValue" id="mA">—</div><div class="metricHelp">a = ȳ − b x̄</div></div><div class="card metric"><div class="metricLabel">Slope b′ (x on y)</div><div class="metricValue" id="mBp">—</div><div class="metricHelp">b′ = S<sub>xy</sub>/S<sub>yy</sub></div></div><div class="card metric"><div class="metricLabel">Intercept a′</div><div class="metricValue" id="mAp">—</div><div class="metricHelp">a′ = x̄ − b′ ȳ</div></div></div>
+
+<div class="grid2" style="margin-top:16px"><article class="card pad"><h3>The two regression lines</h3><div class="formula eq" id="eq1">—</div><div class="formula eq" id="eq2">—</div><div class="note" id="lineText">—</div></article>
+<article class="card pad"><h3>Verification</h3><p class="small muted" style="margin:6px 0 10px">Each pair of values is computed by a different route, then compared.</p><div class="tableWrap"><table class="dataTable"><thead><tr><th>Check</th><th>Left</th><th>Right</th><th>|Δ|</th><th>OK</th></tr></thead><tbody id="verifyRows"></tbody></table></div></article></div>
+<div class="card pad" style="margin-top:16px"><div class="subhead"><div><h3>Step-by-step computation</h3><p>Deviations from the means and the three sums of squares and products.</p></div><span class="tag peach">Hand-check friendly</span></div><div class="tableWrap"><table class="dataTable" style="min-width:820px"><thead><tr><th>i</th><th>x</th><th>y</th><th>x − x̄</th><th>y − ȳ</th><th>(x − x̄)²</th><th>(y − ȳ)²</th><th>(x − x̄)(y − ȳ)</th><th>ŷ = a + b x</th><th>e = y − ŷ</th></tr></thead><tbody id="stepRows"></tbody></table></div><p class="tiny muted" style="margin-top:8px" id="stepNote"></p></div></section>
+
+<section class="section wrap" id="proof"><div class="sectionHead"><div><p class="kicker">05 / Proof</p><h2>Independence implies uncorrelation</h2></div><p>Independent variables are always uncorrelated. The converse is false, and the lab above contains a counterexample.</p></div>
+<div class="proofBox"><span class="tag">Theorem</span><p>Let X and Y be independent random variables with finite second moments. Then Cov(X,Y) = 0, and therefore ρ(X,Y) = 0 whenever σ<sub>X</sub>, σ<sub>Y</sub> &gt; 0.</p></div>
+<div class="proofBox"><h3>Lemma: E[XY] = E[X]·E[Y] for independent X, Y</h3><p><span class="stepNo">1</span><b>Indicators.</b> If X = 1<sub>A</sub> and Y = 1<sub>B</sub> with A ∈ σ(X), B ∈ σ(Y), independence means P(A ∩ B) = P(A)P(B), so E[XY] = E[1<sub>A∩B</sub>] = P(A∩B) = P(A)P(B) = E[X]E[Y].</p><p><span class="stepNo">2</span><b>Simple functions.</b> If X = Σᵢ αᵢ 1<sub>Aᵢ</sub> and Y = Σⱼ βⱼ 1<sub>Bⱼ</sub> (Aᵢ ∈ σ(X), Bⱼ ∈ σ(Y)), bilinearity of the expectation and step 1 give E[XY] = Σᵢⱼ αᵢβⱼ P(Aᵢ)P(Bⱼ) = E[X]E[Y].</p><p><span class="stepNo">3</span><b>Non-negative variables.</b> Take simple functions 0 ≤ Xₖ ↑ X and 0 ≤ Yₖ ↑ Y, each measurable with respect to σ(X) and σ(Y) respectively, so Xₖ and Yₖ are independent. Then XₖYₖ ↑ XY, and by monotone convergence E[XY] = lim E[XₖYₖ] = lim E[Xₖ]E[Yₖ] = E[X]E[Y] (the value +∞ is allowed).</p><p><span class="stepNo">4</span><b>General case.</b> Apply step 3 to |X| and |Y| (also independent): E|XY| = E|X|·E|Y| &lt; ∞, so XY is integrable. Write X = X⁺ − X⁻ and Y = Y⁺ − Y⁻; each of the four pairs (X<sup>±</sup>, Y<sup>±</sup>) is independent and integrable, so by step 3 and linearity</p><div class="formula">E[XY] = E[X⁺Y⁺] − E[X⁺Y⁻] − E[X⁻Y⁺] + E[X⁻Y⁻] = (E[X⁺] − E[X⁻])(E[Y⁺] − E[Y⁻]) = E[X]E[Y]</div><span class="qed">∎</span></div>
+<div class="proofBox"><h3>Conclusion of the theorem</h3><p>Finite second moments make X and Y integrable and, by Cauchy–Schwarz, XY integrable, so the covariance is well defined. Using the lemma,</p><div class="formula">Cov(X,Y) = E[XY] − E[X]E[Y] = E[X]E[Y] − E[X]E[Y] = 0</div><p>and ρ = Cov(X,Y)/(σ<sub>X</sub>σ<sub>Y</sub>) = 0.</p><span class="qed">∎</span><div class="note blue"><b>Measure-theoretic version.</b> Independence means that the joint law is the product measure P<sub>(X,Y)</sub> = P<sub>X</sub> ⊗ P<sub>Y</sub>. By Fubini's theorem (justified by E|XY| &lt; ∞), E[XY] = ∬ xy dP<sub>X</sub>(x) dP<sub>Y</sub>(y) = ∫x dP<sub>X</sub> · ∫y dP<sub>Y</sub> = E[X]E[Y]. In the discrete case this is just Σₓ Σ<sub>y</sub> xy p(x)q(y) = (Σₓ x p(x))(Σ<sub>y</sub> y q(y)).</div></div>
+<div class="grid2" style="margin-top:16px"><article class="card pad"><span class="tag peach">The converse is false</span><h3 style="margin-top:12px">Uncorrelated but dependent</h3><p class="small" style="margin-top:8px">Let X be uniform on {−1, 0, 1} and Y = X². Then E[X] = 0 and E[XY] = E[X³] = 0, so</p><div class="formula">Cov(X,Y) = E[X³] − E[X]E[X²] = 0 − 0 = 0</div><p class="small">yet Y is a function of X, so they are dependent: P(X=1, Y=1) = 1/3 but P(X=1)P(Y=1) = (1/3)(2/3) = 2/9.</p><div class="btnrow" style="margin-top:14px"><button class="btn primary" id="loadParabola" type="button">Show y = x² in the lab</button></div></article>
+<article class="card pad"><span class="tag blue">A special case</span><h3 style="margin-top:12px">Jointly Gaussian variables</h3><p class="small" style="margin-top:8px">If (X,Y) is bivariate normal and ρ = 0, the joint density factorizes into the product of the two marginal densities, so X and Y are independent. Only in this Gaussian case is "uncorrelated ⇔ independent" true.</p><div class="note">Correlation detects <b>linear</b> dependence only. To detect general dependence one needs other tools, for instance mutual information or distance correlation.</div></article></div></section>
+
+<section class="section wrap" id="references"><div class="sectionHead"><div><p class="kicker">06 / Further reading</p><h2>References</h2></div></div><div class="card pad sources"><ul class="small muted" style="margin:0;padding-left:18px;line-height:2"><li>Casella, G. &amp; Berger, R. L., <i>Statistical Inference</i> — covariance and correlation (ch. 4), simple linear regression (ch. 12).</li><li>Wasserman, L., <i>All of Statistics</i> — expectation and independence, linear regression.</li><li>Billingsley, P., <i>Probability and Measure</i> — independence, product measures and Fubini's theorem.</li><li>Welford, B. P. (1962), "Note on a method for calculating corrected sums of squares and products", <i>Technometrics</i> 4(3).</li></ul></div></section>
+</main>
+<footer class="footer"><div class="wrap footerRow"><span>Probability Lab · Correlation &amp; Regression</span><span>Runs locally in your browser · No external libraries required</span></div></footer>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const fmt=(x,d=4)=>Number.isFinite(x)?(Math.abs(x)>0&&Math.abs(x)<1e-4?x.toExponential(2):x.toFixed(d)):'—';
+const COLORS={grid:'#294452',axis:'#96b0bb',blue:'#8ca9ff',mint:'#7ee8d3',cyan:'#65c9ef',peach:'#ffc38f',purple:'#c5a4f4'};
+function prep(canvas){const r=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2),w=Math.max(100,r.width),h=Math.max(100,r.height);canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);return{c,w,h};}
+function axes(c,w,h,xmin,xmax,ymin,ymax,xTicks){const p={l:52,r:13,t:16,b:34},a={x:p.l,y:p.t,w:w-p.l-p.r,h:h-p.t-p.b};const X=x=>a.x+(x-xmin)/(xmax-xmin)*a.w,Y=y=>a.y+a.h-(y-ymin)/(ymax-ymin)*a.h;c.save();c.font='10px system-ui';c.strokeStyle=COLORS.grid;c.fillStyle=COLORS.axis;c.lineWidth=1;c.textAlign='right';c.textBaseline='middle';for(let i=0;i<=4;i++){const v=ymin+(ymax-ymin)*i/4,yy=Y(v);c.beginPath();c.moveTo(a.x,yy);c.lineTo(a.x+a.w,yy);c.stroke();c.fillText(fmt(v,2),a.x-7,yy)}c.textAlign='center';c.textBaseline='top';for(const v of xTicks){const xx=X(v);c.beginPath();c.moveTo(xx,a.y);c.lineTo(xx,a.y+a.h);c.stroke();c.fillText(fmt(v,2),xx,a.y+a.h+9)}c.restore();return{X,Y,a};}
+function drawLine(c,pts,color,width=2,dash=false){if(pts.length<2)return;c.save();c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.strokeStyle=color;c.lineWidth=width;if(dash)c.setLineDash([7,5]);c.stroke();c.restore();}
+
+/* ---------- Statistics ---------- */
+function stats(pts){
+  const n=pts.length;let mx=0,my=0;
+  for(const [x,y] of pts){mx+=x;my+=y;}
+  mx/=n;my/=n;
+  let sxx=0,syy=0,sxy=0;
+  for(const [x,y] of pts){const dx=x-mx,dy=y-my;sxx+=dx*dx;syy+=dy*dy;sxy+=dx*dy;}
+  // Welford-style online co-moment
+  let k=0,wmx=0,wmy=0,wc=0;
+  for(const [x,y] of pts){k++;const dx=x-wmx;wmx+=dx/k;wmy+=(y-wmy)/k;wc+=dx*(y-wmy);}
+  if(n<2||!(sxx>1e-20*n*mx*mx)||!(syy>1e-20*n*my*my))return null;
+  const b=sxy/sxx,a=my-b*mx,bp=sxy/syy,ap=mx-bp*my,r=sxy/Math.sqrt(sxx*syy);
+  let sse=0;for(const [x,y] of pts){const e=y-a-b*x;sse+=e*e;}
+  return{n,mx,my,sxx,syy,sxy,wc,b,a,bp,ap,r,sse};
+}
+
+/* ---------- Data handling ---------- */
+const PRESETS={
+  study:[[2,65],[3,70],[5,75],[7,85],[9,88],[10,90],[12,98],[13,95]],
+  negative:[[1,24.5],[2,22],[3,20.5],[4,17.5],[6,14.8],[7,12.1],[9,9.7],[10,7.4],[12,5.6]],
+  weak:[[1,5],[2,3],[3,6],[4,4],[5,7],[6,3],[7,6],[8,5],[9,4],[10,7]],
+  perfect:[[1,3],[2,5],[3,7],[4,9],[5,11],[6,13],[7,15],[8,17]],
+  parabola:[[-5,25],[-4,16],[-3,9],[-2,4],[-1,1],[0,0],[1,1],[2,4],[3,9],[4,16],[5,25]],
+  outlier:[[1,2],[2,3],[3,3.5],[4,5],[5,5.5],[6,7],[7,7.5],[8,20]]
+};
+let data=[],cur=null,seed=12345;
+function rng(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}
+function gauss(){let u=0;while(u===0)u=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rng());}
+function parseData(text){
+  const pts=[];const lines=text.split(/\r?\n/);let first=true;
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i].trim();if(!line)continue;
+    const tok=line.split(/[\s,;]+/).filter(Boolean);
+    const nums=tok.map(Number);
+    if(tok.length!==2||nums.some(v=>!Number.isFinite(v))){
+      if(first&&pts.length===0){first=false;continue;}
+      return{error:'Line '+(i+1)+': expected two numbers "x, y".'};
+    }
+    first=false;pts.push([nums[0],nums[1]]);
+  }
+  return{pts};
+}
+function toText(pts){return pts.map(p=>p[0]+', '+p[1]).join('\n');}
+function setMsg(t,err){const m=$('parseMsg');m.textContent=t;m.className='msg'+(err?' err':'');}
+function loadPreset(key){
+  $('preset').value=key;data=PRESETS[key].map(p=>p.slice());$('dataIn').value=toText(data);update();
+}
+function generate(){
+  const rho=+$('genRho').value,n=+$('genN').value,pts=[];
+  for(let i=0;i<n;i++){const z1=gauss(),z2=gauss();const x=50+10*z1,y=60+15*(rho*z1+Math.sqrt(Math.max(0,1-rho*rho))*z2);pts.push([+x.toFixed(1),+y.toFixed(1)]);}
+  data=pts;$('preset').value='custom';$('dataIn').value=toText(pts);update();
+}
+
+/* ---------- Rendering ---------- */
+function strength(r){const a=Math.abs(r);return a>=.9?'very strong':a>=.7?'strong':a>=.4?'moderate':a>=.2?'weak':'very weak / none';}
+function clearOutputs(){
+  ['mN','mR','mR2','mGM','mB','mA','mBp','mAp'].forEach(id=>$(id).textContent='—');
+  ['mMeans','mStrength','mGMhelp'].forEach(id=>$(id).textContent='—');
+  $('eq1').textContent='—';$('eq2').textContent='—';$('lineText').textContent='Enter at least 2 points where neither x nor y is constant.';
+  $('verifyRows').innerHTML='';$('stepRows').innerHTML='';$('stepNote').textContent='';
+}
+function update(){
+  const parsed=parseData($('dataIn').value);
+  if(parsed.error){setMsg(parsed.error,true);cur=null;clearOutputs();drawScatter();return;}
+  data=parsed.pts;cur=stats(data);
+  if(!cur){setMsg(data.length+' points read, but x or y is constant (or fewer than 2 points): r and the regression lines are undefined.',true);clearOutputs();drawScatter();return;}
+  setMsg(data.length+' points loaded.',false);
+  const s=cur,sg=Math.sign(s.sxy),gm=sg*Math.sqrt(s.b*s.bp);
+  $('mN').textContent=s.n;$('mMeans').textContent='x̄ = '+fmt(s.mx,3)+' · ȳ = '+fmt(s.my,3);
+  $('mR').textContent=fmt(s.r,4);$('mStrength').textContent=(s.r>0?'Positive, ':s.r<0?'Negative, ':'')+strength(s.r);
+  $('mR2').textContent=fmt(s.r*s.r,4);
+  $('mGM').textContent=fmt(gm,4);$('mGMhelp').textContent='|r| = '+fmt(Math.abs(s.r),4)+' · sign taken from S_xy';
+  $('mB').textContent=fmt(s.b,4);$('mA').textContent=fmt(s.a,4);$('mBp').textContent=fmt(s.bp,4);$('mAp').textContent=fmt(s.ap,4);
+  const sgn=v=>v<0?'−':'+';
+  $('eq1').textContent='ŷ = '+fmt(s.a,3)+' '+sgn(s.b)+' '+fmt(Math.abs(s.b),3)+' · x';
+  $('eq2').textContent='x̂ = '+fmt(s.ap,3)+' '+sgn(s.bp)+' '+fmt(Math.abs(s.bp),3)+' · y';
+  const inv=s.bp!==0?'1/b′ = '+fmt(1/s.bp,3):'infinite (vertical line)';
+  let txt='r = '+fmt(s.r,3)+': a '+strength(s.r)+(s.r>0?' positive':s.r<0?' negative':'')+' linear association; '+fmt(100*s.r*s.r,1)+'% of the variance of y is explained by x. ';
+  if(Math.abs(s.r)>1-1e-9)txt+='Since |r| = 1 the two lines coincide.';
+  else txt+='In the (x, y) plane the second line has slope '+inv+', compared with b = '+fmt(s.b,3)+' for the first, because |r| < 1 (b·b′ = r² = '+fmt(s.r*s.r,4)+').';
+  $('lineText').textContent=txt;
+  // verification
+  const rows=[
+    ['r = S_xy/√(S_xx S_yy)  vs  sign·√(b·b′)',s.r,gm],
+    ['r²  vs  b · b′',s.r*s.r,s.b*s.bp],
+    ['SSE (direct sum)  vs  S_yy(1 − r²)',s.sse,s.syy*(1-s.r*s.r)],
+    ['S_xy two-pass  vs  Welford online',s.sxy,s.wc],
+    ['Line y on x at x̄  vs  ȳ',s.a+s.b*s.mx,s.my],
+    ['Line x on y at ȳ  vs  x̄',s.ap+s.bp*s.my,s.mx]
+  ];
+  $('verifyRows').innerHTML=rows.map(([t,l,r])=>{const d=Math.abs(l-r),tol=1e-9*Math.max(1,Math.abs(l),Math.abs(r)),ok=d<=tol;return '<tr><td>'+t+'</td><td class="num">'+fmt(l,6)+'</td><td class="num">'+fmt(r,6)+'</td><td class="num">'+(d===0?'0':d.toExponential(1))+'</td><td class="'+(ok?'ok':'bad')+'">'+(ok?'✓':'✗')+'</td></tr>';}).join('');
+  // step table
+  const MAXR=40;let html='',se=0;
+  data.forEach(([x,y],i)=>{const dx=x-s.mx,dy=y-s.my,yh=s.a+s.b*x,e=y-yh;se+=e;if(i<MAXR)html+='<tr><td>'+(i+1)+'</td><td class="num">'+fmt(x,3)+'</td><td class="num">'+fmt(y,3)+'</td><td class="num">'+fmt(dx,3)+'</td><td class="num">'+fmt(dy,3)+'</td><td class="num">'+fmt(dx*dx,3)+'</td><td class="num">'+fmt(dy*dy,3)+'</td><td class="num">'+fmt(dx*dy,3)+'</td><td class="num">'+fmt(yh,3)+'</td><td class="num">'+fmt(e,3)+'</td></tr>';});
+  let sdx=0,sdy=0;data.forEach(([x,y])=>{sdx+=x-s.mx;sdy+=y-s.my;});
+  html+='<tr class="total"><td>Σ</td><td class="num">'+fmt(data.reduce((u,p)=>u+p[0],0),3)+'</td><td class="num">'+fmt(data.reduce((u,p)=>u+p[1],0),3)+'</td><td class="num">'+fmt(sdx,3)+'</td><td class="num">'+fmt(sdy,3)+'</td><td class="num">'+fmt(s.sxx,3)+'</td><td class="num">'+fmt(s.syy,3)+'</td><td class="num">'+fmt(s.sxy,3)+'</td><td class="num">—</td><td class="num">'+fmt(se,3)+'</td></tr>';
+  $('stepRows').innerHTML=html;
+  $('stepNote').textContent=(data.length>MAXR?'Showing the first '+MAXR+' of '+data.length+' rows; totals include all points. ':'')+'The sums of the deviations and of the residuals are zero up to rounding; S_xx, S_yy, S_xy are the three totals used in every formula above.';
+  drawScatter();
+}
+function drawScatter(){
+  const canvas=$('scatter'),{c,w,h}=prep(canvas);
+  if(!cur){c.fillStyle=COLORS.axis;c.font='13px system-ui';c.textAlign='center';c.fillText('Enter at least 2 points with non-constant x and y',w/2,h/2);return;}
+  const std=$('stdChk').checked;let P=data;
+  if(std){const sx=Math.sqrt(cur.sxx/cur.n),sy=Math.sqrt(cur.syy/cur.n);P=data.map(([x,y])=>[(x-cur.mx)/sx,(y-cur.my)/sy]);}
+  const s=std?stats(P):cur;if(!s)return;
+  let xmin=Math.min(...P.map(p=>p[0])),xmax=Math.max(...P.map(p=>p[0])),ymin=Math.min(...P.map(p=>p[1])),ymax=Math.max(...P.map(p=>p[1]));
+  const px=(xmax-xmin)*.1||1,py=(ymax-ymin)*.1||1;xmin-=px;xmax+=px;ymin-=py;ymax+=py;
+  const ticks=[0,1,2,3,4].map(i=>xmin+(xmax-xmin)*i/4);
+  const{X,Y,a}=axes(c,w,h,xmin,xmax,ymin,ymax,ticks);
+  c.save();c.beginPath();c.rect(a.x,a.y,a.w,a.h);c.clip();
+  const mode=$('resMode').value;
+  if(mode!=='n'){c.save();c.lineWidth=1.2;c.strokeStyle=mode==='v'?'#7ee8d3aa':'#ffc38faa';for(const[x,y]of P){c.beginPath();if(mode==='v'){c.moveTo(X(x),Y(y));c.lineTo(X(x),Y(s.a+s.b*x));}else{c.moveTo(X(x),Y(y));c.lineTo(X(s.ap+s.bp*y),Y(y));}c.stroke();}c.restore();}
+  drawLine(c,[[X(xmin),Y(s.a+s.b*xmin)],[X(xmax),Y(s.a+s.b*xmax)]],COLORS.mint,2.4);
+  drawLine(c,[[X(s.ap+s.bp*ymin),Y(ymin)],[X(s.ap+s.bp*ymax),Y(ymax)]],COLORS.peach,2.4,true);
+  c.fillStyle='#ffffffdd';for(const[x,y]of P){c.beginPath();c.arc(X(x),Y(y),P.length>80?2.6:4,0,Math.PI*2);c.fill();}
+  c.beginPath();c.arc(X(s.mx),Y(s.my),6,0,Math.PI*2);c.strokeStyle=COLORS.purple;c.lineWidth=2.4;c.stroke();
+  c.restore();
+}
+
+/* ---------- Events ---------- */
+$('preset').addEventListener('change',e=>{if(e.target.value!=='custom')loadPreset(e.target.value);});
+$('dataIn').addEventListener('input',()=>{$('preset').value='custom';update();});
+$('genRho').addEventListener('input',()=>{$('genRhoOut').textContent=(+$('genRho').value).toFixed(2);});
+$('genN').addEventListener('input',()=>{$('genNOut').textContent=$('genN').value;});
+$('genBtn').addEventListener('click',generate);
+$('stdChk').addEventListener('change',drawScatter);
+$('resMode').addEventListener('change',drawScatter);
+$('loadParabola').addEventListener('click',()=>{loadPreset('parabola');$('lab').scrollIntoView({behavior:'smooth'});});
+window.addEventListener('resize',drawScatter);
+loadPreset('study');
+</script>
+</body>
+</html>
